@@ -679,18 +679,18 @@ else:
                 key='symptom_mic'
             )
 
+            # Voice Input Processing (Hallucination Fix)
             if audio_data and 'bytes' in audio_data:
                 audio_bytes = audio_data['bytes']
     
                 if len(audio_bytes) < 1000:
                     st.warning("⚠️ No audio detected.")
                 else:
-                    with st.spinner("⏳ Converting..."):
+                    with st.spinner("⏳ Converting English speech..."):
                         try:
                             audio_file = io.BytesIO(audio_bytes)
                             audio_file.name = "speech.wav"
                 
-                            # whisper-large-v3-turbo ကို ပြောင်းသုံးခြင်း (အလွန်မြန်သည်)
                             transcription = groq_client.audio.transcriptions.create(
                                 file=(audio_file.name, audio_file.read()),
                                 model="whisper-large-v3-turbo",
@@ -699,9 +699,15 @@ else:
                             )
                 
                             transcribed_text = str(transcription).strip()
-                            if transcribed_text and transcribed_text != st.session_state.speech_text:
+                            
+                            # Whisper ရဲ့ Hallucination / Hall-of-Fame အမှားများကို စစ်ထုတ်ခြင်း
+                            ignored_phrases = ["thank you", "thank you.", "thanks", "subtitles", "you"]
+                            
+                            if transcribed_text.lower() not in ignored_phrases and len(transcribed_text) > 2:
                                 st.session_state.speech_text = transcribed_text
                                 st.rerun()
+                            else:
+                                st.warning("⚠️ အသံ သဲသဲကွဲကွဲ မကြားရပါ။ ကျေးဇူးပြု၍ ပြန်ပြောပေးပါ။")
                     
                         except Exception as e:
                             st.error(f"Audio API error: {e}")
