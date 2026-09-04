@@ -390,17 +390,6 @@ st.markdown(f"""
         font-size: 1rem !important;
     }}
 
-    /* Placeholder Dark/Light Mode Styling Fix */
-    input::placeholder, textarea::placeholder {{
-        color: {text_muted} !important;
-        opacity: 0.8 !important;
-    }}
-
-    div[data-baseweb="input"] input::placeholder {{
-        color: {text_muted} !important;
-        opacity: 0.8 !important;
-    }}
-
     .onboarding-card {{
         max-width: 440px;
         margin: 2rem auto;
@@ -779,16 +768,9 @@ else:
                         current_model = active_models.get(model_choice, list(active_models.values())[0])
                         X_input = active_tfidf.transform([clean_input])
                         
-                        # Fix for Scikit-Learn Version Mismatch / AttributeError
-                        try:
-                            pred_encoded = current_model.predict(X_input)[0]
-                            probs = current_model.predict_proba(X_input)[0]
-                        except Exception:
-                            X_dense = X_input.toarray() if hasattr(X_input, "toarray") else X_input
-                            pred_encoded = current_model.predict(X_dense)[0]
-                            probs = current_model.predict_proba(X_dense)[0]
-
+                        pred_encoded = current_model.predict(X_input)[0]
                         pred_disease = active_le.inverse_transform([pred_encoded])[0]
+                        probs = current_model.predict_proba(X_input)[0]
                         confidence = max(probs) * 100
                         
                         top3_idx = np.argsort(probs)[-3:][::-1]
@@ -886,7 +868,7 @@ else:
             coloraxis_showscale=False
         )
         fig.update_xaxes(tickfont=dict(color=chart_font_color), title_font=dict(color=chart_font_color), gridcolor=chart_grid_color)
-        fig.update_yaxes(tickfont=dict(color=chart_font_color), title_font=dict(color=chart_grid_color), gridcolor=chart_grid_color)
+        fig.update_yaxes(tickfont=dict(color=chart_font_color), title_font=dict(color=chart_font_color), gridcolor=chart_grid_color)
         st.plotly_chart(fig, use_container_width=True)
         
         st.markdown("### Metrics Table")
