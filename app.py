@@ -734,9 +734,18 @@ else:
                         has_negation = any(neg in chunk for neg in negation_words)
 
                         if "ဖျား" in chunk and not has_negation:
-                            for sym in searchable_syms_list:
-                                if any(kw in sym for kw in ["ဖျား", "အဖျား"]):
-                                    matched.append(sym)
+                            if any(w in chunk for w in ["နည်းနည်း", "ငွေ့ငွေ့", "မသိမသာ"]):
+                                for sym in searchable_syms_list:
+                                    if "ငွေ့ငွေ့" in sym or "နည်းနည်း" in sym:
+                                        matched.append(sym)
+                            elif any(w in chunk for w in ["ကြီး", "အရမ်း", "ပြင်း", "ထက်"]):
+                                for sym in searchable_syms_list:
+                                    if "ကြီး" in sym or "ပြင်း" in sym:
+                                        matched.append(sym)
+                            else:
+                                for sym in searchable_syms_list:
+                                    if any(kw in sym for kw in ["ဖျား", "အဖျား"]):
+                                        matched.append(sym)
 
                         if "ခေါင်း" in chunk and "ကိုက်" in chunk:
                             for sym in searchable_syms_list:
