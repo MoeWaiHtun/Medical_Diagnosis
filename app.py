@@ -149,7 +149,8 @@ translations = {
         "matched_sym": "🔍 Matched Symptoms (N-gram & Morphology):",
         "select_model": "အသုံးပြုမည့် AI အယ်လ်ဂိုရီသမ်ကို ရွေးချယ်ပါ:",
         "btn_predict": "🚀 ရောဂါခန့်မှန်းချက် ထုတ်ပြန်မည်",
-        "warning_sym": "⚠️ ကျေးဇူးပြု၍ အနည်းဆုံး ရောဂါလက္ခဏာတစ်ခု ရွေးချယ်ပါ။",
+        "warning_sym": "⚠️ ကျေးဇူးပြု၍ မှန်ကန်သော ရောဂါလက္ခဏာများ ရွေးချယ်ပါ သို့မဟုတ် ရေးသားပါ။",
+        "no_symptom_found": "⚠️ ထည့်သွင်းထားသော စာသားတွင် တိကျသော ရောဂါလက္ခဏာ မပါဝင်ပါ။ ကျေးဇူးပြု၍ ရောဂါလက္ခဏာကို ပိုမိုတိကျစွာ ရေးသားပါ။",
         "res_title": "🎯 ခန့်မှန်းရရှိသော ရောဂါရလဒ်",
         "confidence": "ခန့်မှန်းရရှိမှု သေချာမှုနှုန်း:",
         "desc": "📄 ရောဂါအကြောင်းအရာ:",
@@ -191,7 +192,8 @@ translations = {
         "matched_sym": "🔍 Matched Symptoms (N-gram & Morphology):",
         "select_model": "Select AI Algorithm:",
         "btn_predict": "🚀 Run Diagnostic Analysis",
-        "warning_sym": "⚠️ Please select or type at least one symptom.",
+        "warning_sym": "⚠️ Please select or type valid medical symptoms.",
+        "no_symptom_found": "⚠️ No recognized symptoms found in text. Please describe symptoms more accurately.",
         "res_title": "🎯 Diagnostic Prediction Result",
         "confidence": "Model Confidence:",
         "desc": "📄 Overview:",
@@ -289,7 +291,6 @@ st.markdown(f"""
         line-height: 1.5;
     }}
 
-    /* Sidebar Gap Compact Fixes */
     [data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div {{
         gap: 0.4rem !important;
     }}
@@ -326,7 +327,6 @@ st.markdown(f"""
         color: #ffffff !important;
     }}
 
-    /* Select Box & Multiselect Styling */
     div[data-baseweb="select"] > div {{
         background-color: {input_bg} !important;
         border-radius: 10px !important;
@@ -388,6 +388,16 @@ st.markdown(f"""
         border: 1px solid {border_color} !important;
         color: {text_color} !important;
         font-size: 1rem !important;
+    }}
+
+    input::placeholder, textarea::placeholder {{
+        color: {text_muted} !important;
+        opacity: 0.8 !important;
+    }}
+
+    div[data-baseweb="input"] input::placeholder {{
+        color: {text_muted} !important;
+        opacity: 0.8 !important;
     }}
 
     .onboarding-card {{
@@ -611,7 +621,6 @@ else:
         col1, col2 = st.columns([2.2, 1])
         
         with col1:
-            # Native Streamlit Voice Input - English Only
             audio_val = st.audio_input(t["voice_title"])
 
             if audio_val:
@@ -755,71 +764,82 @@ else:
                         if m not in combined_symptoms:
                             combined_symptoms.append(m)
                             
+                # Check for Invalid Input / No Symptoms Selected & Found
                 if not combined_symptoms and not user_text.strip():
                     st.warning(t["warning_sym"])
                 else:
-                    with st.spinner("⏳ Analyzing symptoms..."):
-                        symptom_text = ' '.join(combined_symptoms) if combined_symptoms else user_text
+                    symptom_text = ' '.join(combined_symptoms) if combined_symptoms else user_text
+                    
+                    (active_models, active_tfidf, active_le, _, active_desc, active_prec, active_sev, _, _, _, _), active_lang = get_artifacts_for_text(symptom_text, st.session_state.lang)
+                    
+                    clean_input = process_symptom_text(symptom_text, lang=active_lang)
+                    X_input = active_tfidf.transform([clean_input])
+                    
+                    # 💡 FIX: TF-IDF Non-zero Check (စာသားထဲမှာ ရောဂါလက္ခဏာ လုံးဝမပါပါက Prediction မလုပ်ပါ)
+                    if not combined_symptoms and X_input.nnz == 0:
+                        st.error(t["no_symptom_found"])
+                    else:
+                        with st.spinner("⏳ Analyzing symptoms..."):
+                            current_model = active_models.get(model_choice, list(active_models.values())[0])
+                            
+                            try:
+                                pred_encoded = current_model.predict(X_input)[0]
+                                probs = current_model.predict_proba(X_input)[0]
+                            except Exception:
+                                X_dense = X_input.toarray() if hasattr(X_input, "toarray") else X_input
+                                pred_encoded = current_model.predict(X_dense)[0]
+                                probs = current_model.predict_proba(X_dense)[0]
+
+                            pred_disease = active_le.inverse_transform([pred_encoded])[0]
+                            confidence = max(probs) * 100
+                            
+                            top3_idx = np.argsort(probs)[-3:][::-1]
+                            top3 = [(active_le.inverse_transform([idx])[0], probs[idx]*100) for idx in top3_idx]
                         
-                        (active_models, active_tfidf, active_le, _, active_desc, active_prec, active_sev, _, _, _, _), active_lang = get_artifacts_for_text(symptom_text, st.session_state.lang)
+                        st.markdown("---")
+                        st.markdown(f"<h3>{t['res_title']}</h3>", unsafe_allow_html=True)
                         
-                        clean_input = process_symptom_text(symptom_text, lang=active_lang)
+                        st.markdown(f"""
+                        <div class='result-info'>
+                            <h2 style='color: #4c8bf5; margin-top:0;'>{pred_disease}</h2>
+                            <p style='color: {text_muted}; font-size: 1.1em;'>{t['confidence']} <strong>{confidence:.2f}%</strong></p>
+                        </div>
+                        """, unsafe_allow_html=True)
                         
-                        current_model = active_models.get(model_choice, list(active_models.values())[0])
-                        X_input = active_tfidf.transform([clean_input])
+                        st.progress(float(confidence)/100)
                         
-                        pred_encoded = current_model.predict(X_input)[0]
-                        pred_disease = active_le.inverse_transform([pred_encoded])[0]
-                        probs = current_model.predict_proba(X_input)[0]
-                        confidence = max(probs) * 100
+                        st.markdown(f"**{t['desc']}** {active_desc.get(pred_disease, 'N/A')}")
                         
-                        top3_idx = np.argsort(probs)[-3:][::-1]
-                        top3 = [(active_le.inverse_transform([idx])[0], probs[idx]*100) for idx in top3_idx]
-                    
-                    st.markdown("---")
-                    st.markdown(f"<h3>{t['res_title']}</h3>", unsafe_allow_html=True)
-                    
-                    st.markdown(f"""
-                    <div class='result-info'>
-                        <h2 style='color: #4c8bf5; margin-top:0;'>{pred_disease}</h2>
-                        <p style='color: {text_muted}; font-size: 1.1em;'>{t['confidence']} <strong>{confidence:.2f}%</strong></p>
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    st.progress(float(confidence)/100)
-                    
-                    st.markdown(f"**{t['desc']}** {active_desc.get(pred_disease, 'N/A')}")
-                    
-                    st.markdown(f"**{t['precautions']}**")
-                    precautions = active_prec.get(pred_disease, ["Consult a healthcare professional."])
-                    for prec in precautions:
-                        if pd.notna(prec) and str(prec).strip() != '':
-                            st.markdown(f"- {prec}")
-                    
-                    st.markdown("---")
-                    st.markdown(f"<h4>{t['top3_title']}</h4>", unsafe_allow_html=True)
-                    
-                    fig = px.bar(
-                        x=[p for _, p in top3],
-                        y=[name for name, _ in top3],
-                        orientation='h',
-                        labels={'x': 'Probability (%)', 'y': 'Condition'},
-                        color=[p for _, p in top3],
-                        color_continuous_scale='Blues',
-                        template=plotly_template
-                    )
-                    fig.update_layout(
-                        paper_bgcolor='rgba(0,0,0,0)', 
-                        plot_bgcolor='rgba(0,0,0,0)', 
-                        font=dict(color=chart_font_color),
-                        height=280,
-                        margin=dict(l=10, r=10, t=30, b=10),
-                        coloraxis_showscale=False
-                    )
-                    fig.update_xaxes(tickfont=dict(color=chart_font_color), title_font=dict(color=chart_font_color), gridcolor=chart_grid_color)
-                    fig.update_yaxes(tickfont=dict(color=chart_font_color), title_font=dict(color=chart_font_color), gridcolor=chart_grid_color)
-                    fig.update_traces(texttemplate='%{x:.1f}%', textposition='outside')
-                    st.plotly_chart(fig, use_container_width=True)
+                        st.markdown(f"**{t['precautions']}**")
+                        precautions = active_prec.get(pred_disease, ["Consult a healthcare professional."])
+                        for prec in precautions:
+                            if pd.notna(prec) and str(prec).strip() != '':
+                                st.markdown(f"- {prec}")
+                        
+                        st.markdown("---")
+                        st.markdown(f"<h4>{t['top3_title']}</h4>", unsafe_allow_html=True)
+                        
+                        fig = px.bar(
+                            x=[p for _, p in top3],
+                            y=[name for name, _ in top3],
+                            orientation='h',
+                            labels={'x': 'Probability (%)', 'y': 'Condition'},
+                            color=[p for _, p in top3],
+                            color_continuous_scale='Blues',
+                            template=plotly_template
+                        )
+                        fig.update_layout(
+                            paper_bgcolor='rgba(0,0,0,0)', 
+                            plot_bgcolor='rgba(0,0,0,0)', 
+                            font=dict(color=chart_font_color),
+                            height=280,
+                            margin=dict(l=10, r=10, t=30, b=10),
+                            coloraxis_showscale=False
+                        )
+                        fig.update_xaxes(tickfont=dict(color=chart_font_color), title_font=dict(color=chart_font_color), gridcolor=chart_grid_color)
+                        fig.update_yaxes(tickfont=dict(color=chart_font_color), title_font=dict(color=chart_font_color), gridcolor=chart_grid_color)
+                        fig.update_traces(texttemplate='%{x:.1f}%', textposition='outside')
+                        st.plotly_chart(fig, use_container_width=True)
         
         with col2:
             st.markdown(f"<h3 style='text-align: center;'>{t['quick_info']}</h3>", unsafe_allow_html=True)
@@ -868,7 +888,7 @@ else:
             coloraxis_showscale=False
         )
         fig.update_xaxes(tickfont=dict(color=chart_font_color), title_font=dict(color=chart_font_color), gridcolor=chart_grid_color)
-        fig.update_yaxes(tickfont=dict(color=chart_font_color), title_font=dict(color=chart_font_color), gridcolor=chart_grid_color)
+        fig.update_yaxes(tickfont=dict(color=chart_font_color), title_font=dict(color=chart_grid_color), gridcolor=chart_grid_color)
         st.plotly_chart(fig, use_container_width=True)
         
         st.markdown("### Metrics Table")
@@ -913,7 +933,7 @@ else:
         )
         fig.update_yaxes(
             tickfont=dict(color=chart_font_color), 
-            title_font=dict(color=chart_font_color), 
+            title_font=dict(color=chart_grid_color), 
             gridcolor=chart_grid_color
         )
         
