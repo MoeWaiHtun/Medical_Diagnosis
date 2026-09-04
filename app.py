@@ -647,34 +647,12 @@ else:
 
            
 
-           # if audio_data and 'bytes' in audio_data:
-            #    with st.spinner("⏳ အသံမှ စာသားသို့ ပြောင်းလဲနေပါသည်..."):
-             #       audio_bytes = audio_data['bytes']
-             #       with open("temp_audio.wav", "wb") as f:
-             #           f.write(audio_bytes)
-             #       try:
-              #          res = whisper_model.transcribe(
-              #              "temp_audio.wav",
-               #             language="my",
-                #            fp16=False,
-                #            initial_prompt="This is a medical symptoms input in Burmese or English language: ဖျားနေတယ်၊ ခေါင်းကိုက်တယ်၊ ချောင်းဆိုးတယ်၊ I have fever and headache."
-                #        )
-                 #       transcribed_text = res.get("text", "").strip()
-                 #       if transcribed_text:
-                  #          st.session_state.speech_text = transcribed_text
-                   #         st.rerun()
-                    #except Exception as e:
-                     #   st.error(f"Audio processing error:{e}")
-                    #finally:
-                       # if os.path.exists("temp_audio.wav"):
-                        #    os.remove("temp_audio.wav")
-
-                # SPEECH-TO-TEXT VOICE INPUT UI (English Only)
+           
                # Voice Input Section (Fast & Fixed)
-            st.markdown("#### 🎙️ အသံဖြင့် ပြောဆိုရန် (Voice Input)")
+                st.markdown("#### 🎙️ အသံဖြင့် ပြောဆိုရန် (Voice Input)")
 
                 # Streamlit Native Audio Input သုံးခြင်း (ပိုမိုမြန်ဆန်ပြီး Loop မပတ်ပါ)
-            audio_value = st.audio_input("အသံဖမ်းရန် ခလုတ်ကို နှိပ်ပါ", key="voice_symptom_input")
+                audio_value = st.audio_input("အသံဖမ်းရန် ခလုတ်ကို နှိပ်ပါ", key="voice_symptom_input")
 
                 if audio_value is not None:
                 # ဖိုင်အသစ် ဝင်လာမှသာ API ကို ခေါ်မည်
