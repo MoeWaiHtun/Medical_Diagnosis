@@ -390,6 +390,17 @@ st.markdown(f"""
         font-size: 1rem !important;
     }}
 
+    /* Placeholder Dark/Light Mode Styling Fix */
+    input::placeholder, textarea::placeholder {{
+        color: {text_muted} !important;
+        opacity: 0.8 !important;
+    }}
+
+    div[data-baseweb="input"] input::placeholder {{
+        color: {text_muted} !important;
+        opacity: 0.8 !important;
+    }}
+
     .onboarding-card {{
         max-width: 440px;
         margin: 2rem auto;
@@ -868,7 +879,7 @@ else:
             coloraxis_showscale=False
         )
         fig.update_xaxes(tickfont=dict(color=chart_font_color), title_font=dict(color=chart_font_color), gridcolor=chart_grid_color)
-        fig.update_yaxes(tickfont=dict(color=chart_font_color), title_font=dict(color=chart_font_color), gridcolor=chart_grid_color)
+        fig.update_yaxes(tickfont=dict(color=chart_font_color), title_font=dict(color=chart_grid_color), gridcolor=chart_grid_color)
         st.plotly_chart(fig, use_container_width=True)
         
         st.markdown("### Metrics Table")
