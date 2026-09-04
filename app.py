@@ -662,19 +662,21 @@ else:
                         f.write(audio_bytes)
                     try:
                     # Whisper Transcribe (Burmese + English Prompting)
-                    res = whisper_model.transcribe(
-                        "temp_audio.wav",
-                        language="my",
-                        fp16=False,
-                        initial_prompt="This is a medical symptoms input in Burmese or English language: ဖျားနေတယ်၊ ခေါင်းကိုက်တယ်၊ ချောင်းဆိုးတယ်၊ I have fever and headache."
-                    )
-                    transcribed_text = res.get("text", "").strip()
-                    if transcribed_text:
-                        st.session_state.speech_text = transcribed_text
-                        st.rerun()
-                    
-                    if os.path.exists("temp_audio.wav"):
-                        os.remove("temp_audio.wav")
+                        res = whisper_model.transcribe(
+                            "temp_audio.wav",
+                            language="my",
+                            fp16=False,
+                            initial_prompt="This is a medical symptoms input in Burmese or English language: ဖျားနေတယ်၊ ခေါင်းကိုက်တယ်၊ ချောင်းဆိုးတယ်၊ I have fever and headache."
+                        )
+                        transcribed_text = res.get("text", "").strip()
+                        if transcribed_text:
+                            st.session_state.speech_text = transcribed_text
+                            st.rerun()
+                    except Exception as e:
+                        st.error(f"Audio processing error:{e}")
+                    finally:
+                        if os.path.exists("temp_audio.wav"):
+                            os.remove("temp_audio.wav")
             
             user_text = st.text_input(
                 t["input_sym"], 
