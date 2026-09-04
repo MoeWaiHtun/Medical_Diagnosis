@@ -8,7 +8,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 from sklearn.decomposition import PCA
-from gorq import Gorq
+from groq import Groq
 
 import nltk
 from nltk.stem import PorterStemmer
