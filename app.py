@@ -247,6 +247,7 @@ if st.session_state.theme_mode == "dark":
     dropdown_bg = "#1e2130"
     dropdown_text = "#ffffff"
     dropdown_hover = "#3566d6"
+    placeholder_color = "#d1d5db"  # 💡 White/Light Gray for Dark Mode
     plotly_template = "plotly_dark"
     chart_font_color = "#f0f2f6"
     chart_grid_color = "#2d3748"
@@ -262,6 +263,7 @@ else:
     dropdown_bg = "#ffffff"
     dropdown_text = "#111827"
     dropdown_hover = "#2563eb"
+    placeholder_color = "#6b7280"
     plotly_template = "plotly_white"
     chart_font_color = "#1f2937"
     chart_grid_color = "#e2e8f0"
@@ -388,6 +390,22 @@ st.markdown(f"""
         border: 1px solid {border_color} !important;
         color: {text_color} !important;
         font-size: 1rem !important;
+    }}
+
+    /* 💡 PLACEHOLDER COLOR STYLES FOR TEXT INPUT & DROPDOWN */
+    input::placeholder, textarea::placeholder {{
+        color: {placeholder_color} !important;
+        opacity: 0.85 !important;
+    }}
+
+    div[data-baseweb="select"] input::placeholder {{
+        color: {placeholder_color} !important;
+        opacity: 0.85 !important;
+    }}
+
+    div[data-baseweb="select"] [data-placeholder="true"] {{
+        color: {placeholder_color} !important;
+        opacity: 0.85 !important;
     }}
 
     .onboarding-card {{
@@ -707,8 +725,6 @@ else:
                                     match_found = True
                         
                         else:
-                            # 💡 FIX FOR GENERAL KEYWORDS LIKE "fever":
-                            # If chunk contains a general word (e.g. fever) that matches a sub-symptom (high_fever/mild_fever)
                             if chunk_cleaned in s_clean or s_clean in input_ngrams or s_clean == chunk_cleaned:
                                 match_found = True
                             else:
@@ -767,8 +783,7 @@ else:
                     clean_input = process_symptom_text(symptom_text, lang=active_lang)
                     X_input = active_tfidf.transform([clean_input])
                     
-                    # 💡 AVERAGE WEIGHT LOGIC FOR GENERAL KEYWORDS (e.g., "fever")
-                    # If multiple sub-symptoms (like high_fever, mild_fever) are matched from a single word
+                    # AVERAGE WEIGHT LOGIC FOR GENERAL KEYWORDS (e.g., "fever")
                     if matched and len(matched) > 1:
                         feature_names = list(active_tfidf.get_feature_names_out())
                         X_dense = X_input.toarray()
