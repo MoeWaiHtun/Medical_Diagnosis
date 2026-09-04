@@ -12,6 +12,10 @@ from sklearn.decomposition import PCA
 import nltk
 from nltk.stem import PorterStemmer
 
+# Speech-to-Text Libraries
+import whisper
+from streamlit_mic_recorder import mic_recorder
+
 try:
     stemmer = PorterStemmer()
 except Exception:
@@ -44,6 +48,19 @@ if "kb_search_query" not in st.session_state:
 
 if "selected_symptoms_list" not in st.session_state:
     st.session_state.selected_symptoms_list = []
+
+if "speech_text" not in st.session_state:
+    st.session_state.speech_text = ""
+
+# ==============================================================================
+# WHISPER LOCAL MODEL LOAD
+# ==============================================================================
+@st.cache_resource
+def load_whisper_model():
+    # Streamlit Cloud Memory Limit မကျော်ရန် 'base' သို့မဟုတ် 'tiny' သုံးပါ
+    return whisper.load_model("base")
+
+whisper_model = load_whisper_model()
 
 # ==============================================================================
 # PROCESS, MORPHOLOGY & N-GRAM FUNCTIONS
@@ -127,7 +144,7 @@ translations = {
         "info_box": "ℹ️ ဤစနစ်သည် Machine Learning အယ်လ်ဂိုရီသမ်များနှင့် TF-IDF N-gram နည်းပညာကို အသုံးပြု၍ ရောဂါ ခန့်မှန်းပေးပါသည်။",
         "pred_title": "🩺 ရောဂါလက္ခဏာ အခြေပြု ခန့်မှန်းစနစ်",
         "select_sym": "ခံစားနေရသော ရောဂါလက္ခဏာများကို ရွေးချယ်ပါ:",
-        "input_sym": "သို့မဟုတ် ဖြစ်ပွားနေပုံကို စာဖြင့် ရေးသားဖော်ပြပါ:",
+        "input_sym": "သို့မဟုတ် ဖြစ်ပွားနေပုံကို စာဖြင့် ရေးသား/အသံဖြင့် ပြောဆိုပါ:",
         "placeholder_sym": "ဥပမာ- severe headache သို့မဟုတ် ခေါင်းအရမ်းကိုက်နေတယ်",
         "matched_sym": "🔍 Matched Symptoms (N-gram & Morphology):",
         "select_model": "အသုံးပြုမည့် AI အယ်လ်ဂိုရီသမ်ကို ရွေးချယ်ပါ:",
@@ -168,7 +185,7 @@ translations = {
         "info_box": "ℹ️ This system uses Machine Learning algorithms & TF-IDF N-gram vectorization to predict conditions.",
         "pred_title": "🩺 Symptom-Based Diagnostic System",
         "select_sym": "Select presenting symptoms:",
-        "input_sym": "Or type symptom description:",
+        "input_sym": "Or type/speak symptom description:",
         "placeholder_sym": "e.g., severe headache or high fever",
         "matched_sym": "🔍 Matched Symptoms (N-gram & Morphology):",
         "select_model": "Select AI Algorithm:",
@@ -208,6 +225,7 @@ def toggle_language():
     else:
         st.session_state.lang = "my"
     st.session_state.selected_symptoms_list = []
+    st.session_state.speech_text = ""
     if 'active_tab' in st.session_state:
         del st.session_state.active_tab
 
@@ -588,9 +606,30 @@ else:
                 on_change=on_multiselect_change,
                 placeholder="Search symptoms..."
             )
+
+            # SPEECH-TO-TEXT VOICE INPUT UI
+            st.markdown("#### 🎙️ အသံဖြင့် ပြောဆိုရန် (Voice Input)")
+            audio_data = mic_recorder(
+                start_prompt="🎙️ အသံဖမ်းမည် (Start Recording)",
+                stop_prompt="⏹️ ရပ်မည် (Stop)",
+                key='symptom_mic'
+            )
+
+            if audio_data and 'bytes' in audio_data:
+                with st.spinner("⏳ အသံမှ စာသားသို့ ပြောင်းလဲနေပါသည်..."):
+                    audio_bytes = audio_data['bytes']
+                    with open("temp_audio.wav", "wb") as f:
+                        f.write(audio_bytes)
+                    
+                    res = whisper_model.transcribe("temp_audio.wav")
+                    st.session_state.speech_text = res.get("text", "").strip()
+                    
+                    if os.path.exists("temp_audio.wav"):
+                        os.remove("temp_audio.wav")
             
             user_text = st.text_input(
                 t["input_sym"], 
+                value=st.session_state.speech_text,
                 placeholder=t["placeholder_sym"]
             )
             
@@ -888,3 +927,4 @@ else:
                     for prec in precautions:
                         if pd.notna(prec) and str(prec).strip() != '':
                             st.markdown(f"- {prec}")
+
