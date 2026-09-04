@@ -56,11 +56,12 @@ if 'active_tab_index' not in st.session_state:
 # ==============================================================================
 # PROCESS, MORPHOLOGY & N-GRAM FUNCTIONS
 # ==============================================================================
-# 💡 Stopwords မကြာခဏသုံးသော အသုံးအနှုန်းများ ထပ်မံဖြည့်စွက်ထားပါသည်
+# Stopwords နှင့် အငြင်းစကားလုံးများ (Negations) ပါဝင်သော စာရင်း
 MY_STOPWORDS = [
     "နေတယ်", "နေတာ", "တယ်", "သည်", "တာ", "ခြင်း", "လွန်းလို့", 
     "အရမ်း", "ရမ်း", "ရတာ", "ဖြစ်တယ်", "ဖြစ်နေတာ", "ဖြစ်လို့", "တွေ", "မအီမသာ",
-    "နေပါတယ်", "ပါတယ်", "များ", "ကြီး", "တာမျိုးရှိ", "တာမျိုး", "မျိုးရှိ", "ရှိ", "တာ"
+    "နေပါတယ်", "ပါတယ်", "များ", "ကြီး", "တာမျိုးရှိ", "တာမျိုး", "မျိုးရှိ", "ရှိ", "တာ",
+    "မရှိဘူး", "မရှိ", "မပါဘူး", "မပါ", "မဟုတ်ဘူး", "မဟုတ်", "မဖျား"
 ]
 
 def clean_myanmar_morphology(text):
@@ -150,7 +151,7 @@ translations = {
         "voice_title": "🎙️ Voice Input System (English Only)",
         "select_sym": "ခံစားနေရသော ရောဂါလက္ခဏာများကို ရွေးချယ်ပါ:",
         "input_sym": "သို့မဟုတ် ဖြစ်ပွားနေပုံကို စာဖြင့် ရေးသားဖော်ပြပါ:",
-        "placeholder_sym": "ဥပမာ- ခေါင်းအရမ်းကိုက်နေတယ်၊ ဖျားတာမျိုးရှိ",
+        "placeholder_sym": "ဥပမာ- ခေါင်းအရမ်းကိုက်နေတယ်၊ ဖျားတာမျိုးမရှိဘူး",
         "matched_sym": "🔍 Matched Symptoms (N-gram & Morphology):",
         "select_model": "အသုံးပြုမည့် AI အယ်လ်ဂိုရီသမ်ကို ရွေးချယ်ပါ:",
         "btn_predict": "🚀 ရောဂါခန့်မှန်းချက် ထုတ်ပြန်မည်",
@@ -193,7 +194,7 @@ translations = {
         "voice_title": "🎙️ Voice Input System (English Only)",
         "select_sym": "Select presenting symptoms:",
         "input_sym": "Or type symptom description:",
-        "placeholder_sym": "e.g., severe headache or fever",
+        "placeholder_sym": "e.g., severe headache without fever",
         "matched_sym": "🔍 Matched Symptoms (N-gram & Morphology):",
         "select_model": "Select AI Algorithm:",
         "btn_predict": "🚀 Run Diagnostic Analysis",
@@ -286,7 +287,6 @@ st.markdown(f"""
         color: {text_color} !important; 
     }}
 
-    /* 💡 MOVE TITLE & CONTENT UPWARDS */
     .block-container, div[data-testid="stMainBlockContainer"] {{
         padding-top: 1.5rem !important;
         padding-bottom: 1rem !important;
@@ -407,7 +407,7 @@ st.markdown(f"""
         color: #ffffff !important;
     }}
 
-    /* 💡 INPUT BOX STYLING (EXPANDED HEIGHT, FONT & PADDING) */
+    /* INPUT BOX STYLING (EXPANDED HEIGHT, FONT & PADDING) */
     div[data-testid="stTextInput"] input {{
         background-color: {input_bg} !important;
         border-radius: 12px !important;
@@ -721,10 +721,14 @@ else:
                         continue
                     
                     if detected_lang == "my":
+                        # အငြင်း စကားလုံး ပါ/မပါ စစ်ဆေးခြင်း
+                        negation_words = ["မရှိ", "မရှိဘူး", "မပါ", "မပါဘူး", "မဟုတ်", "မဖျား"]
+                        has_negation = any(neg in chunk for neg in negation_words)
+
                         chunk_cleaned = clean_myanmar_morphology(chunk_cleaned)
                         
-                        # 💡 "ဖျား" ဟုပါပါက "အဖျားကြီး" သို့မဟုတ် "ဖျား" ကို ချက်ချင်း မိစေသည့် Logic
-                        if "ဖျား" in chunk:
+                        # အငြင်း (Negation) မပါမှသာ "ဖျား" ကို Extract လုပ်မည်
+                        if "ဖျား" in chunk and not has_negation:
                             for sym in searchable_syms_list:
                                 if "ဖျား" in sym or "အဖျားကြီး" in sym:
                                     matched.append(sym)
