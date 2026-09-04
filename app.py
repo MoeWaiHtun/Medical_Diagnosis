@@ -645,13 +645,7 @@ else:
                 placeholder="Search symptoms..."
             )
 
-            # SPEECH-TO-TEXT VOICE INPUT UI (With Burmese Language Support)
-            st.markdown("#### 🎙️ အသံဖြင့် ပြောဆိုရန် (Voice Input)")
-            audio_data = mic_recorder(
-                start_prompt="🎙️ အသံဖမ်းမည် (Start Recording)",
-                stop_prompt="⏹️ ရပ်မည် (Stop)",
-                key='symptom_mic'
-            )
+           
 
            # if audio_data and 'bytes' in audio_data:
             #    with st.spinner("⏳ အသံမှ စာသားသို့ ပြောင်းလဲနေပါသည်..."):
@@ -677,39 +671,40 @@ else:
 
                 # SPEECH-TO-TEXT VOICE INPUT UI (English Only)
            
-            # Audio Data ရရှိသည့်အခါ (English Audio Processing)
+            # SPEECH-TO-TEXT VOICE INPUT UI
+            st.markdown("#### 🎙️ အသံဖြင့် ပြောဆိုရန် (Voice Input)")
+            audio_data = mic_recorder(
+                start_prompt="🎙️ အသံဖမ်းမည် (Start Recording)",
+                stop_prompt="⏹️ ရပ်မည် (Stop)",
+                key='symptom_mic'
+            )
+
             if audio_data and 'bytes' in audio_data:
                 audio_bytes = audio_data['bytes']
     
                 if len(audio_bytes) < 1000:
-                    st.warning("⚠️ No audio detected. Please speak clearly.")
+                    st.warning("⚠️ No audio detected.")
                 else:
-                    with st.spinner("⏳ Converting English speech to text..."):
+                    with st.spinner("⏳ Converting..."):
                         try:
-                            # RAM Memory (BytesIO) မှ တိုက်ရိုက် ပို့ပေးခြင်း
                             audio_file = io.BytesIO(audio_bytes)
-                            audio_file.name = "speech_input.wav"
+                            audio_file.name = "speech.wav"
                 
-                            # Groq Whisper API (English Optimized)
+                            # whisper-large-v3-turbo ကို ပြောင်းသုံးခြင်း (အလွန်မြန်သည်)
                             transcription = groq_client.audio.transcriptions.create(
                                 file=(audio_file.name, audio_file.read()),
-                                model="whisper-large-v3",
+                                model="whisper-large-v3-turbo",
                                 language="en",
-                                prompt="fever, headache, cough, vomiting, chest pain, abdominal pain",
                                 response_format="text"
                             )
                 
                             transcribed_text = str(transcription).strip()
-                            if transcribed_text:
+                            if transcribed_text and transcribed_text != st.session_state.speech_text:
                                 st.session_state.speech_text = transcribed_text
                                 st.rerun()
-                            else:
-                                st.warning("⚠️ Could not recognize audio. Please try again.")
                     
                         except Exception as e:
                             st.error(f"Audio API error: {e}")
-
-                
             
             user_text = st.text_input(
                 t["input_sym"], 
