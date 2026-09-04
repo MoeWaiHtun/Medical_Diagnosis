@@ -1,4 +1,5 @@
 import base64
+import io
 import os
 import re
 import joblib
@@ -674,7 +675,9 @@ else:
                        # if os.path.exists("temp_audio.wav"):
                         #    os.remove("temp_audio.wav")
 
+                
 
+                # Audio Data ရရှိသည့်အခါ
             if audio_data and 'bytes' in audio_data:
                 audio_bytes = audio_data['bytes']
     
@@ -682,14 +685,14 @@ else:
                     st.warning("⚠️ အသံဖမ်းယူမှု မရရှိပါ။ ကျေးဇူးပြု၍ စကားကို သေချာကျယ်ကျယ် ပြန်ပြောပေးပါ။")
                 else:
                     with st.spinner("⏳ Groq AI ဖြင့် ၁ စက္ကန့်အတွင်း စာသားပြောင်းလဲနေပါသည်..."):
-                        temp_filename = "temp_audio.wav"
-                        with open(temp_filename, "wb") as f:
-                            f.write(audio_bytes)
-            
                         try:
-                            with open(temp_filename, "rb") as file:
-                                transcription = groq_client.audio.transcriptions.create(
-                                file=(temp_filename, file.read()),
+                            # Disk ပေါ်တွင် Temp File မဆောက်ဘဲ RAM Memory (BytesIO) မှ တိုက်ရိုက် ပို့ပေးခြင်း
+                            audio_file = io.BytesIO(audio_bytes)
+                            audio_file.name = "speech_input.wav"  # Groq API အသိအမှတ်ပြုရန် File Name ယာယီသတ်မှတ်ခြင်း
+                
+                            # Groq Whisper API လှမ်းခေါ်ခြင်း
+                            transcription = groq_client.audio.transcriptions.create(
+                                file=(audio_file.name, audio_file.read()),
                                 model="whisper-large-v3",
                                 language="my",
                                 prompt="ဖျားတယ်၊ ခေါင်းကိုက်တယ်၊ ချောင်းဆိုးတယ်၊ ဝမ်းသွားတယ်၊ အော့အန်တယ်၊ ရင်ဘတ်အောင့်တယ်။",
@@ -705,10 +708,8 @@ else:
                     
                         except Exception as e:
                             st.error(f"Audio API error: {e}")
-                        finally:
-                            if os.path.exists(temp_filename):
-                                os.remove(temp_filename)
             
+                            
             
             user_text = st.text_input(
                 t["input_sym"], 
