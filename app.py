@@ -45,9 +45,6 @@ if "kb_search_query" not in st.session_state:
 if "selected_symptoms_list" not in st.session_state:
     st.session_state.selected_symptoms_list = []
 
-if "voice_transcript" not in st.session_state:
-    st.session_state.voice_transcript = ""
-
 # ==============================================================================
 # PROCESS, MORPHOLOGY & N-GRAM FUNCTIONS
 # ==============================================================================
@@ -130,7 +127,7 @@ translations = {
         "info_box": "ℹ️ ဤစနစ်သည် Machine Learning အယ်လ်ဂိုရီသမ်များနှင့် TF-IDF N-gram နည်းပညာကို အသုံးပြု၍ ရောဂါ ခန့်မှန်းပေးပါသည်။",
         "pred_title": "🩺 ရောဂါလက္ခဏာ အခြေပြု ခန့်မှန်းစနစ်",
         "voice_title": "🎙️ အသံဖြင့် ပြောဆိုရန် (Voice Input)",
-        "voice_instruction": "အသံဖမ်းရန် ခလုတ်ကို နှိပ်ပါ",
+        "voice_instruction": "အသံဖမ်းရန် အောက်ပါ ခလုတ်ကို နှိပ်ပါ",
         "select_sym": "ခံစားနေရသော ရောဂါလက္ခဏာများကို ရွေးချယ်ပါ:",
         "input_sym": "သို့မဟုတ် ဖြစ်ပွားနေပုံကို စာဖြင့် ရေးသားဖော်ပြပါ:",
         "placeholder_sym": "ဥပမာ- severe headache သို့မဟုတ် ခေါင်းအရမ်းကိုက်နေတယ်",
@@ -571,85 +568,15 @@ else:
         
         with col1:
             # ==============================================================================
-            # VOICE INPUT PROCESS (ADDED VOICE SUPPORT)
+            # STREAMLIT NATIVE AUDIO INPUT
             # ==============================================================================
             st.markdown(f"### {t['voice_title']}")
             
-            # 1. Native Streamlit Audio Recorder Input (Streamlit 1.39+)
             if hasattr(st, "audio_input"):
                 audio_value = st.audio_input(t['voice_instruction'])
                 if audio_value:
                     st.audio(audio_value)
             
-            # 2. Browser Speech Recognition (Web Speech API Integration)
-            speech_lang_code = "my-MM" if st.session_state.lang == "my" else "en-US"
-            voice_html = f"""
-            <div style="background-color: {card_bg}; padding: 15px; border-radius: 12px; border: 1px solid {border_color}; text-align: center;">
-                <p style="margin-bottom: 8px; font-weight: bold; color: {text_color};">{t['voice_instruction']}</p>
-                <button id="record_btn" onclick="toggleSpeech()" style="
-                    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-                    color: white; border: none; padding: 10px 20px; border-radius: 8px;
-                    font-weight: bold; cursor: pointer; font-size: 1rem;">
-                    🎤 Record Speech
-                </button>
-                <p id="speech_status" style="margin-top: 8px; font-size: 0.85rem; color: {text_muted};"></p>
-            </div>
-            <script>
-                var recognition;
-                var isRecording = false;
-                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {{
-                    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                    recognition = new SpeechRecognition();
-                    recognition.continuous = false;
-                    recognition.interimResults = false;
-                    recognition.lang = '{speech_lang_code}';
-
-                    recognition.onresult = function(event) {{
-                        var transcript = event.results[0][0].transcript;
-                        document.getElementById('speech_status').innerText = "Recognized: " + transcript;
-                        
-                        var inputs = window.parent.document.querySelectorAll('input[type="text"]');
-                        for (var i = 0; i < inputs.length; i++) {{
-                            if (inputs[i].placeholder.includes('headache') || inputs[i].placeholder.includes('ခေါင်း')) {{
-                                inputs[i].value = transcript;
-                                inputs[i].dispatchEvent(new Event('input', {{ bubbles: true }}));
-                                inputs[i].dispatchEvent(new Event('change', {{ bubbles: true }}));
-                                break;
-                            }}
-                        }}
-                    }};
-
-                    recognition.onerror = function(event) {{
-                        document.getElementById('speech_status').innerText = "Error: " + event.error;
-                        document.getElementById('record_btn').innerText = "🎤 Record Speech";
-                        isRecording = false;
-                    }};
-
-                    recognition.onend = function() {{
-                        document.getElementById('record_btn').innerText = "🎤 Record Speech";
-                        isRecording = false;
-                    }};
-                }} else {{
-                    document.getElementById('speech_status').innerText = "Speech recognition not supported in this browser.";
-                }}
-
-                function toggleSpeech() {{
-                    if (!recognition) return;
-                    if (!isRecording) {{
-                        recognition.start();
-                        isRecording = true;
-                        document.getElementById('record_btn').innerText = "🛑 Stop & Listen";
-                        document.getElementById('speech_status').innerText = "Listening...";
-                    }} else {{
-                        recognition.stop();
-                        isRecording = false;
-                        document.getElementById('record_btn').innerText = "🎤 Record Speech";
-                    }}
-                }}
-            </script>
-            """
-            st.components.v1.html(voice_html, height=130)
-
             symptom_cols = [c for c in df_dummy.columns if c.startswith('Symptom') or c.startswith('ရောဂါလက္ခဏာ')]
             all_syms = set()
             for col in symptom_cols:
