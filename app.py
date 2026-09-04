@@ -671,10 +671,10 @@ else:
 
                 # SPEECH-TO-TEXT VOICE INPUT UI (English Only)
                # Voice Input Section (Fast & Fixed)
-                st.markdown("#### 🎙️ အသံဖြင့် ပြောဆိုရန် (Voice Input)")
+            st.markdown("#### 🎙️ အသံဖြင့် ပြောဆိုရန် (Voice Input)")
 
                 # Streamlit Native Audio Input သုံးခြင်း (ပိုမိုမြန်ဆန်ပြီး Loop မပတ်ပါ)
-                audio_value = st.audio_input("အသံဖမ်းရန် ခလုတ်ကို နှိပ်ပါ", key="voice_symptom_input")
+            audio_value = st.audio_input("အသံဖမ်းရန် ခလုတ်ကို နှိပ်ပါ", key="voice_symptom_input")
 
                 if audio_value is not None:
                 # ဖိုင်အသစ် ဝင်လာမှသာ API ကို ခေါ်မည်
