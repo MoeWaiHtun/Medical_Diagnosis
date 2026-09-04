@@ -675,27 +675,27 @@ else:
                        # if os.path.exists("temp_audio.wav"):
                         #    os.remove("temp_audio.wav")
 
-                
-
-                # Audio Data ရရှိသည့်အခါ
+                # SPEECH-TO-TEXT VOICE INPUT UI (English Only)
+           
+            # Audio Data ရရှိသည့်အခါ (English Audio Processing)
             if audio_data and 'bytes' in audio_data:
                 audio_bytes = audio_data['bytes']
     
                 if len(audio_bytes) < 1000:
-                    st.warning("⚠️ အသံဖမ်းယူမှု မရရှိပါ။ ကျေးဇူးပြု၍ စကားကို သေချာကျယ်ကျယ် ပြန်ပြောပေးပါ။")
+                    st.warning("⚠️ No audio detected. Please speak clearly.")
                 else:
-                    with st.spinner("⏳ Groq AI ဖြင့် ၁ စက္ကန့်အတွင်း စာသားပြောင်းလဲနေပါသည်..."):
+                    with st.spinner("⏳ Converting English speech to text..."):
                         try:
-                            # Disk ပေါ်တွင် Temp File မဆောက်ဘဲ RAM Memory (BytesIO) မှ တိုက်ရိုက် ပို့ပေးခြင်း
+                            # RAM Memory (BytesIO) မှ တိုက်ရိုက် ပို့ပေးခြင်း
                             audio_file = io.BytesIO(audio_bytes)
-                            audio_file.name = "speech_input.wav"  # Groq API အသိအမှတ်ပြုရန် File Name ယာယီသတ်မှတ်ခြင်း
+                            audio_file.name = "speech_input.wav"
                 
-                            # Groq Whisper API လှမ်းခေါ်ခြင်း
+                            # Groq Whisper API (English Optimized)
                             transcription = groq_client.audio.transcriptions.create(
                                 file=(audio_file.name, audio_file.read()),
                                 model="whisper-large-v3",
-                                language="my",
-                                prompt="ဖျားတယ်၊ ခေါင်းကိုက်တယ်၊ ချောင်းဆိုးတယ်၊ ဝမ်းသွားတယ်၊ အော့အန်တယ်၊ ရင်ဘတ်အောင့်တယ်။",
+                                language="en",
+                                prompt="fever, headache, cough, vomiting, chest pain, abdominal pain",
                                 response_format="text"
                             )
                 
@@ -704,12 +704,12 @@ else:
                                 st.session_state.speech_text = transcribed_text
                                 st.rerun()
                             else:
-                                st.warning("⚠️ အသံကို စာသားပြောင်း၍ မရပါ။ ပြန်ပြောကြည့်ပါ။")
+                                st.warning("⚠️ Could not recognize audio. Please try again.")
                     
                         except Exception as e:
                             st.error(f"Audio API error: {e}")
-            
-                            
+
+                
             
             user_text = st.text_input(
                 t["input_sym"], 
