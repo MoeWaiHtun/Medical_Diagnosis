@@ -240,6 +240,7 @@ if 'active_tab' not in st.session_state:
 if st.session_state.theme_mode == "dark":
     bg_color = "#0e1117"
     card_bg = "#1e2130"
+    header_bg = "#0e1117"  # 💡 Header Bar Color for Dark Mode
     text_color = "#f0f2f6"
     text_muted = "#a8b2d1"
     border_color = "#3e4559"
@@ -247,7 +248,7 @@ if st.session_state.theme_mode == "dark":
     dropdown_bg = "#1e2130"
     dropdown_text = "#ffffff"
     dropdown_hover = "#3566d6"
-    placeholder_color = "#d1d5db"  # 💡 White/Light Gray for Dark Mode
+    placeholder_color = "#d1d5db"  # 💡 White/Light Gray for Dark Mode Placeholder
     plotly_template = "plotly_dark"
     chart_font_color = "#f0f2f6"
     chart_grid_color = "#2d3748"
@@ -256,6 +257,7 @@ if st.session_state.theme_mode == "dark":
 else:
     bg_color = "#f8f9fa"
     card_bg = "#ffffff"
+    header_bg = "#f8f9fa"  # 💡 Header Bar Color for Light Mode
     text_color = "#1f2937"
     text_muted = "#4b5563"
     border_color = "#cbd5e1"
@@ -281,6 +283,20 @@ st.markdown(f"""
     .stApp {{ 
         background-color: {bg_color} !important; 
         color: {text_color} !important; 
+    }}
+
+    /* 💡 HEADER BAR COLOR STYLING */
+    header[data-testid="stHeader"] {{
+        background-color: {header_bg} !important;
+    }}
+    
+    [data-testid="stHeader"] > div {{
+        background-color: {header_bg} !important;
+        color: {text_color} !important;
+    }}
+    
+    [data-testid="stDecoration"] {{
+        background-image: linear-gradient(90deg, #4c8bf5, #a855f7) !important;
     }}
     
     [data-testid="stSidebar"] {{
