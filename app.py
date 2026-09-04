@@ -289,38 +289,44 @@ st.markdown(f"""
         line-height: 1.5;
     }}
 
+    /* Sidebar Gap Compact Fixes */
+    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div {{
+        gap: 0.4rem !important;
+    }}
+
     [data-testid="stSidebar"] button[kind="secondary"],
+    [data-testid="stSidebar"] button[kind="primary"],
     [data-testid="stSidebar"] .stButton > button {{
-        background-color: {nav_btn_bg} !important;
-        color: {nav_btn_text} !important;
-        border: 1px solid {border_color} !important;
         border-radius: 10px !important;
-        padding: 10px 16px !important;
+        padding: 8px 14px !important;
         font-weight: 700 !important;
         width: 100% !important;
         box-shadow: none !important;
+        margin-top: 0px !important;
+        margin-bottom: 0px !important;
     }}
 
-    [data-testid="stSidebar"] button[kind="secondary"] *,
-    [data-testid="stSidebar"] .stButton > button * {{
+    [data-testid="stSidebar"] button[kind="secondary"] {{
+        background-color: {nav_btn_bg} !important;
+        color: {nav_btn_text} !important;
+        border: 1px solid {border_color} !important;
+    }}
+
+    [data-testid="stSidebar"] button[kind="secondary"] * {{
         color: {nav_btn_text} !important;
     }}
 
-    [data-testid="stSidebar"] div[data-active="true"] button[kind="secondary"],
-    [data-testid="stSidebar"] div[data-active="true"] .stButton > button {{
+    [data-testid="stSidebar"] button[kind="primary"] {{
         background: linear-gradient(135deg, #4c8bf5 0%, #3566d6 100%) !important;
+        color: #ffffff !important;
         border: none !important;
     }}
 
-    [data-testid="stSidebar"] div[data-active="true"] button[kind="secondary"] *,
-    [data-testid="stSidebar"] div[data-active="true"] .stButton > button * {{
+    [data-testid="stSidebar"] button[kind="primary"] * {{
         color: #ffffff !important;
     }}
 
-    /* ========================================== */
-    /* SELECT BOX & MULTISELECT STYLING           */
-    /* ========================================== */
-    
+    /* Select Box & Multiselect Styling */
     div[data-baseweb="select"] > div {{
         background-color: {input_bg} !important;
         border-radius: 10px !important;
@@ -588,14 +594,10 @@ else:
         ]
 
         for item in nav_items:
-            is_active = (st.session_state.active_tab == item)
-            btn_style_attr = 'data-active="true"' if is_active else 'data-active="false"'
-            
-            st.markdown(f'<div {btn_style_attr}>', unsafe_allow_html=True)
-            if st.button(item, key=f"nav_btn_{item}", use_container_width=True):
+            btn_type = "primary" if st.session_state.active_tab == item else "secondary"
+            if st.button(item, key=f"nav_btn_{item}", type=btn_type, use_container_width=True):
                 st.session_state.active_tab = item
                 st.rerun()
-            st.markdown('</div>', unsafe_allow_html=True)
 
         tab_choice = st.session_state.active_tab
 
