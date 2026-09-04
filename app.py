@@ -57,7 +57,6 @@ if "speech_text" not in st.session_state:
 # ==============================================================================
 @st.cache_resource
 def load_whisper_model():
-    # Streamlit Cloud Memory Limit မကျော်ရန် 'base' သို့မဟုတ် 'tiny' သုံးပါ
     return whisper.load_model("base")
 
 whisper_model = load_whisper_model()
@@ -233,7 +232,7 @@ if 'active_tab' not in st.session_state:
     st.session_state.active_tab = t['nav_pred']
 
 # ==============================================================================
-# UI STYLES & DYNAMIC THEME SELECTORS
+# UI STYLES & DYNAMIC THEME SELECTORS (CSS Dynamic Font Size & Light Mode Fix)
 # ==============================================================================
 if st.session_state.theme_mode == "dark":
     bg_color = "#0e1117"
@@ -250,6 +249,7 @@ if st.session_state.theme_mode == "dark":
     chart_grid_color = "#2d3748"
     nav_btn_bg = "#262b3a"
     nav_btn_text = "#ffffff"
+    mic_bg = "#1e2130"
 else:
     bg_color = "#f8f9fa"
     card_bg = "#ffffff"
@@ -265,13 +265,16 @@ else:
     chart_grid_color = "#e2e8f0"
     nav_btn_bg = "#e2e8f0"
     nav_btn_text = "#0f172a"
+    mic_bg = "#ffffff"
 
 st.markdown(f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
+    /* Font Sizes ကြီးပေးထားခြင်း */
     html, body, [class*="css"] {{
         font-family: 'Padauk', 'Plus Jakarta Sans', sans-serif !important;
+        font-size: 18px !important;
     }}
 
     .stApp {{ 
@@ -284,9 +287,25 @@ st.markdown(f"""
         border-right: 1px solid {border_color};
     }}
 
-    p, label, span, div, h1, h2, h3, h4, h5, h6, li, strong {{
+    p, label, span, div, li, strong {{
         color: {text_color} !important;
-        line-height: 1.5;
+        line-height: 1.6;
+        font-size: 18px !important;
+    }}
+
+    h1 {{ font-size: 32px !important; font-weight: 800 !important; }}
+    h2 {{ font-size: 26px !important; font-weight: 700 !important; }}
+    h3 {{ font-size: 22px !important; font-weight: 600 !important; }}
+    h4 {{ font-size: 20px !important; font-weight: 600 !important; }}
+
+    /* Light Mode မီတာ/အသံဖမ်း Recorder အမဲရောင်တန်းကို အဖြူပြင်ခြင်း */
+    div[data-testid="stCustomBlock"],
+    .stMicRecorder,
+    iframe[title="streamlit_mic_recorder.mic_recorder"] {{
+        background-color: {mic_bg} !important;
+        border-radius: 12px !important;
+        padding: 6px !important;
+        border: 1px solid {border_color} !important;
     }}
 
     [data-testid="stSidebar"] button[kind="secondary"],
@@ -297,6 +316,7 @@ st.markdown(f"""
         border-radius: 10px !important;
         padding: 10px 16px !important;
         font-weight: 700 !important;
+        font-size: 18px !important;
         width: 100% !important;
         box-shadow: none !important;
     }}
@@ -325,7 +345,7 @@ st.markdown(f"""
         border-radius: 8px !important;
         border: 1px solid {border_color} !important;
         color: {text_color} !important;
-        font-size: 1rem !important;
+        font-size: 18px !important;
     }}
 
     div[data-baseweb="popover"],
@@ -334,6 +354,7 @@ st.markdown(f"""
     div[data-baseweb="menu"] * {{
         background-color: {dropdown_bg} !important;
         color: {dropdown_text} !important;
+        font-size: 18px !important;
     }}
 
     ul[role="listbox"], 
@@ -367,8 +388,8 @@ st.markdown(f"""
         text-align: center;
     }}
     .onboarding-icon {{ font-size: 3.8rem; margin-bottom: 1rem; }}
-    .onboarding-title {{ font-size: 1.6rem; font-weight: 800; color: {text_color} !important; margin-bottom: 0.6rem; }}
-    .onboarding-desc {{ font-size: 0.95rem; color: {text_muted} !important; line-height: 1.5; margin-bottom: 1.5rem; }}
+    .onboarding-title {{ font-size: 1.8rem; font-weight: 800; color: {text_color} !important; margin-bottom: 0.6rem; }}
+    .onboarding-desc {{ font-size: 1.1rem; color: {text_muted} !important; line-height: 1.5; margin-bottom: 1.5rem; }}
 
     .stMainBlockContainer div.stButton>button {{ 
         background: linear-gradient(135deg, #4c8bf5 0%, #3566d6 100%) !important;
@@ -377,13 +398,14 @@ st.markdown(f"""
         border: none !important;
         padding: 12px 24px !important;
         font-weight: 700 !important;
+        font-size: 18px !important;
         min-height: 48px !important;
         width: 100% !important;
     }}
 
     div[data-testid="stMetricValue"] {{
         color: #4c8bf5 !important;
-        font-size: 1.8rem !important;
+        font-size: 2rem !important;
     }}
 
     .risk-box {{
@@ -392,7 +414,7 @@ st.markdown(f"""
         font-weight: bold;
         text-align: center;
         margin-top: 10px;
-        font-size: 1rem;
+        font-size: 1.1rem;
     }}
     .high-risk {{ background-color: #fee2e2; color: #991b1b !important; border: 1px solid #f87171; }}
     .mod-risk {{ background-color: #fef3c7; color: #92400e !important; border: 1px solid #fbbf24; }}
@@ -410,7 +432,7 @@ st.markdown(f"""
         text-align: center;
         font-weight: 800;
         margin-bottom: 20px;
-        font-size: 1.8rem;
+        font-size: 2rem;
         background: linear-gradient(90deg, #4c8bf5, #a855f7);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -536,7 +558,7 @@ else:
             )
 
         st.markdown(f"<h2 style='text-align: center;'>🩺 {t['title']}</h2>", unsafe_allow_html=True)
-        st.markdown(f"<p style='text-align: center; color: {text_muted}; font-size: 0.9em;'>{t['subtitle']}</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='text-align: center; color: {text_muted}; font-size: 1em;'>{t['subtitle']}</p>", unsafe_allow_html=True)
         
         lang_btn_label = "🇬🇧 English" if st.session_state.lang == "my" else "🇲🇲 မြန်မာ"
         theme_btn_label = "☀️ Light" if st.session_state.theme_mode == "dark" else "🌙 Dark"
@@ -607,7 +629,7 @@ else:
                 placeholder="Search symptoms..."
             )
 
-            # SPEECH-TO-TEXT VOICE INPUT UI
+            # SPEECH-TO-TEXT VOICE INPUT UI (With Burmese Language Support)
             st.markdown("#### 🎙️ အသံဖြင့် ပြောဆိုရန် (Voice Input)")
             audio_data = mic_recorder(
                 start_prompt="🎙️ အသံဖမ်းမည် (Start Recording)",
@@ -621,7 +643,12 @@ else:
                     with open("temp_audio.wav", "wb") as f:
                         f.write(audio_bytes)
                     
-                    res = whisper_model.transcribe("temp_audio.wav")
+                    # Whisper Transcribe (Burmese + English Prompting)
+                    res = whisper_model.transcribe(
+                        "temp_audio.wav",
+                        language="my",
+                        initial_prompt="This is a medical symptoms input in Burmese or English language: ဖျားနေတယ်၊ ခေါင်းကိုက်တယ်၊ ချောင်းဆိုးတယ်၊ I have fever and headache."
+                    )
                     st.session_state.speech_text = res.get("text", "").strip()
                     
                     if os.path.exists("temp_audio.wav"):
@@ -927,4 +954,3 @@ else:
                     for prec in precautions:
                         if pd.notna(prec) and str(prec).strip() != '':
                             st.markdown(f"- {prec}")
-
