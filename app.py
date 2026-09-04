@@ -49,6 +49,10 @@ if "selected_symptoms_list" not in st.session_state:
 if "transcribed_text" not in st.session_state:
     st.session_state.transcribed_text = ""
 
+# Track current active tab index (0: Predictor, 1: Models, 2: PCA, 3: KB)
+if 'active_tab_index' not in st.session_state:
+    st.session_state.active_tab_index = 0
+
 # ==============================================================================
 # PROCESS, MORPHOLOGY & N-GRAM FUNCTIONS
 # ==============================================================================
@@ -222,17 +226,13 @@ translations = {
 
 t = translations.get(st.session_state.lang, translations["my"])
 
+# 💡 Fixed Language Toggle Logic (Keep active tab state using active_tab_index)
 def toggle_language():
     if st.session_state.lang == "my":
         st.session_state.lang = "en"
     else:
         st.session_state.lang = "my"
     st.session_state.selected_symptoms_list = []
-    if 'active_tab' in st.session_state:
-        del st.session_state.active_tab
-
-if 'active_tab' not in st.session_state:
-    st.session_state.active_tab = t['nav_pred']
 
 # ==============================================================================
 # UI STYLES & DYNAMIC THEME SELECTORS
@@ -240,7 +240,7 @@ if 'active_tab' not in st.session_state:
 if st.session_state.theme_mode == "dark":
     bg_color = "#0e1117"
     card_bg = "#1e2130"
-    header_bg = "#0e1117"  # 💡 Header Bar Color for Dark Mode
+    header_bg = "#0e1117"
     text_color = "#f0f2f6"
     text_muted = "#a8b2d1"
     border_color = "#3e4559"
@@ -248,7 +248,7 @@ if st.session_state.theme_mode == "dark":
     dropdown_bg = "#1e2130"
     dropdown_text = "#ffffff"
     dropdown_hover = "#3566d6"
-    placeholder_color = "#d1d5db"  # 💡 White/Light Gray for Dark Mode Placeholder
+    placeholder_color = "#d1d5db"
     plotly_template = "plotly_dark"
     chart_font_color = "#f0f2f6"
     chart_grid_color = "#2d3748"
@@ -257,7 +257,7 @@ if st.session_state.theme_mode == "dark":
 else:
     bg_color = "#f8f9fa"
     card_bg = "#ffffff"
-    header_bg = "#f8f9fa"  # 💡 Header Bar Color for Light Mode
+    header_bg = "#f8f9fa"
     text_color = "#1f2937"
     text_muted = "#4b5563"
     border_color = "#cbd5e1"
@@ -285,7 +285,12 @@ st.markdown(f"""
         color: {text_color} !important; 
     }}
 
-    /* 💡 HEADER BAR COLOR STYLING */
+    /* 💡 Move Title & Content Upwards */
+    .block-container, div[data-testid="stMainBlockContainer"] {{
+        padding-top: 1.5rem !important;
+        padding-bottom: 1rem !important;
+    }}
+
     header[data-testid="stHeader"] {{
         background-color: {header_bg} !important;
     }}
@@ -408,7 +413,6 @@ st.markdown(f"""
         font-size: 1rem !important;
     }}
 
-    /* 💡 PLACEHOLDER COLOR STYLES FOR TEXT INPUT & DROPDOWN */
     input::placeholder, textarea::placeholder {{
         color: {placeholder_color} !important;
         opacity: 0.85 !important;
@@ -627,19 +631,20 @@ else:
             t['nav_kb']
         ]
 
-        for item in nav_items:
-            btn_type = "primary" if st.session_state.active_tab == item else "secondary"
-            if st.button(item, key=f"nav_btn_{item}", type=btn_type, use_container_width=True):
-                st.session_state.active_tab = item
+        # 💡 Track Tab Index to retain position across Language change
+        for idx, item in enumerate(nav_items):
+            btn_type = "primary" if st.session_state.active_tab_index == idx else "secondary"
+            if st.button(item, key=f"nav_btn_{idx}", type=btn_type, use_container_width=True):
+                st.session_state.active_tab_index = idx
                 st.rerun()
 
-        tab_choice = st.session_state.active_tab
+        tab_index = st.session_state.active_tab_index
 
         st.markdown("---")
         st.info(t['info_box'])
 
-    # TAB 1: PREDICTOR
-    if tab_choice == t['nav_pred']:
+    # TAB 1: PREDICTOR (Index 0)
+    if tab_index == 0:
         st.markdown(f"<h1 class='main-title'>{t['pred_title']}</h1>", unsafe_allow_html=True)
         
         col1, col2 = st.columns([2.2, 1])
@@ -788,7 +793,6 @@ else:
                         if m not in combined_symptoms:
                             combined_symptoms.append(m)
                             
-                # Check for Invalid Input / No Symptoms Selected & Found
                 if not combined_symptoms and not user_text.strip():
                     st.warning(t["warning_sym"])
                 else:
@@ -799,7 +803,6 @@ else:
                     clean_input = process_symptom_text(symptom_text, lang=active_lang)
                     X_input = active_tfidf.transform([clean_input])
                     
-                    # AVERAGE WEIGHT LOGIC FOR GENERAL KEYWORDS (e.g., "fever")
                     if matched and len(matched) > 1:
                         feature_names = list(active_tfidf.get_feature_names_out())
                         X_dense = X_input.toarray()
@@ -816,7 +819,6 @@ else:
                                 X_dense[0, idx] = avg_weight
                             X_input = X_dense
 
-                    # TF-IDF Non-zero Check
                     if not combined_symptoms and (hasattr(X_input, "nnz") and X_input.nnz == 0):
                         st.error(t["no_symptom_found"])
                     else:
@@ -905,8 +907,8 @@ else:
             else:
                 st.info("Select symptoms to evaluate severity.")
 
-    # TAB 2: MODEL COMPARISON
-    elif tab_choice == t['nav_models']:
+    # TAB 2: MODEL COMPARISON (Index 1)
+    elif tab_index == 1:
         st.markdown("<h1 class='main-title'>📊 Algorithm Performance Matrix</h1>", unsafe_allow_html=True)
         
         results_df = pd.DataFrame(results)
@@ -935,8 +937,8 @@ else:
         st.markdown("### Metrics Table")
         st.dataframe(results_df.style.format({'Accuracy': '{:.2%}'}), use_container_width=True)
 
-    # TAB 3: DATA VISUALIZATION (PCA)
-    elif tab_choice == t['nav_pca']:
+    # TAB 3: DATA VISUALIZATION (Index 2)
+    elif tab_index == 2:
         st.markdown("<h1 class='main-title'>📈 High-Dimensional PCA Clustering</h1>", unsafe_allow_html=True)
         
         pca = PCA(n_components=2)
@@ -980,8 +982,8 @@ else:
         
         st.plotly_chart(fig, use_container_width=True)
 
-    # TAB 4: MEDICAL KNOWLEDGE BASE
-    elif tab_choice == t['nav_kb']:
+    # TAB 4: MEDICAL KNOWLEDGE BASE (Index 3)
+    elif tab_index == 3:
         st.markdown("<h1 class='main-title'>📚 Diagnostic Condition Directory</h1>", unsafe_allow_html=True)
         
         diseases = list(desc_dict.keys())
