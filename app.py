@@ -285,7 +285,6 @@ st.markdown(f"""
         color: {text_color} !important; 
     }}
 
-    /* Top Padding ဖြည့်စွက်၍ အပေါ်ကပ်နေသည်ကို ပြင်ဆင်ခြင်း */
     .block-container, div[data-testid="stMainBlockContainer"] {{
         padding-top: 4rem !important;
         padding-bottom: 2rem !important;
@@ -428,7 +427,6 @@ st.markdown(f"""
         font-size: 1.05rem !important;
     }}
 
-    /* Onboarding Card Position Adjustment */
     .onboarding-container {{
         margin-top: 30px;
     }}
@@ -717,12 +715,16 @@ else:
                 searchable_syms_list = sorted(list(searchable_syms))
 
                 raw_chunks = re.split(
-                    r'[,;။&]|\band\b|\bwith\b|\bplus\b|\bနှင့်\b|\bနှင့်အတူ\b|\bပြီး\b|\bပြီးတော့\b|\bတာမျိုးရှိ\b|\bတာမျိုး\b|\bမျိုးရှိ\b', 
+                    r'[,;။၊&]|\band\b|\bwith\b|\bplus\b|\bနှင့်\b|\bနှင့်အတူ\b|\bပြီး\b|\bပြီးတော့\b', 
                     user_text, 
                     flags=re.IGNORECASE
                 )
                 
                 for chunk in raw_chunks:
+                    chunk = chunk.strip()
+                    if not chunk:
+                        continue
+
                     chunk_cleaned = process_symptom_text(chunk, lang=detected_lang)
                     if not chunk_cleaned:
                         continue
@@ -731,19 +733,17 @@ else:
                         negation_words = ["မရှိ", "မရှိဘူး", "မပါ", "မပါဘူး", "မဟုတ်", "မဖျား"]
                         has_negation = any(neg in chunk for neg in negation_words)
 
-                        chunk_cleaned = clean_myanmar_morphology(chunk_cleaned)
-                        
                         if "ဖျား" in chunk and not has_negation:
-                            if any(w in chunk for w in ["နဲနဲ", "နည်းနည်း", "ငွေ့ငွေ့"]):
-                                if "အဖျားငွေ့ငွေ့" in searchable_syms_list:
-                                    matched.append("အဖျားငွေ့ငွေ့")
-                                elif "အဖျား" in searchable_syms_list:
-                                    matched.append("အဖျား")
-                            else:
-                                if "အဖျား" in searchable_syms_list:
-                                    matched.append("အဖျား")
-                                elif "ဖျားခြင်း" in searchable_syms_list:
-                                    matched.append("ဖျားခြင်း")
+                            for sym in searchable_syms_list:
+                                if any(kw in sym for kw in ["ဖျား", "အဖျား"]):
+                                    matched.append(sym)
+
+                        if "ခေါင်း" in chunk and "ကိုက်" in chunk:
+                            for sym in searchable_syms_list:
+                                if "ခေါင်း" in sym and "ကိုက်" in sym:
+                                    matched.append(sym)
+
+                        chunk_cleaned = clean_myanmar_morphology(chunk_cleaned)
 
                     words = chunk_cleaned.split()
                     
