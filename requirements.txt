@@ -7,3 +7,4 @@ joblib
 nltk
 streamlit-mic-recorder
 openai-whisper
+xgboost
