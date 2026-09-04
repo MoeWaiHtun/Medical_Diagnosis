@@ -285,9 +285,10 @@ st.markdown(f"""
         color: {text_color} !important; 
     }}
 
+    /* Top Padding ဖြည့်စွက်၍ အပေါ်ကပ်နေသည်ကို ပြင်ဆင်ခြင်း */
     .block-container, div[data-testid="stMainBlockContainer"] {{
-        padding-top: 1.5rem !important;
-        padding-bottom: 1rem !important;
+        padding-top: 4rem !important;
+        padding-bottom: 2rem !important;
     }}
 
     header[data-testid="stHeader"] {{
@@ -427,9 +428,14 @@ st.markdown(f"""
         font-size: 1.05rem !important;
     }}
 
+    /* Onboarding Card Position Adjustment */
+    .onboarding-container {{
+        margin-top: 30px;
+    }}
+
     .onboarding-card {{
         max-width: 440px;
-        margin: 2rem auto;
+        margin: 1.5rem auto;
         background: {card_bg} !important;
         border-radius: 24px;
         padding: 2.5rem 2rem;
@@ -493,6 +499,7 @@ st.markdown(f"""
 # ONBOARDING FLOW LOGIC
 # ==============================================================================
 if st.session_state.onboarding_step < 4:
+    st.markdown("<div class='onboarding-container'></div>", unsafe_allow_html=True)
     ob_col1, ob_col2 = st.columns([3, 2])
     with ob_col2:
         lang_btn_label = "🇬🇧 English" if st.session_state.lang == "my" else "🇲🇲 မြန်မာ"
@@ -709,7 +716,6 @@ else:
                 
                 searchable_syms_list = sorted(list(searchable_syms))
 
-                # စကားလုံး ခွဲထုတ်သည့်နေရာတွင် "တာမျိုးရှိ"၊ "တာမျိုး"၊ "မျိုးရှိ" တို့ပါ အလိုအလျောက် သီးသန့် ကွဲထွက်စေရန် ပြင်ဆင်ထားပါသည်
                 raw_chunks = re.split(
                     r'[,;။&]|\band\b|\bwith\b|\bplus\b|\bနှင့်\b|\bနှင့်အတူ\b|\bပြီး\b|\bပြီးတော့\b|\bတာမျိုးရှိ\b|\bတာမျိုး\b|\bမျိုးရှိ\b', 
                     user_text, 
@@ -727,9 +733,7 @@ else:
 
                         chunk_cleaned = clean_myanmar_morphology(chunk_cleaned)
                         
-                        # "ဖျား" ဆိုသည့် စကားလုံး ပါဝင်မှု စစ်ဆေးခြင်း Logic
                         if "ဖျား" in chunk and not has_negation:
-                            # "နဲနဲ" / "နည်းနည်း" / "ငွေ့ငွေ့" ပါဝင်ပါက "အဖျားငွေ့ငွေ့" ကို ဦးစားပေး စစ်ဆေးမည်
                             if any(w in chunk for w in ["နဲနဲ", "နည်းနည်း", "ငွေ့ငွေ့"]):
                                 if "အဖျားငွေ့ငွေ့" in searchable_syms_list:
                                     matched.append("အဖျားငွေ့ငွေ့")
@@ -755,7 +759,6 @@ else:
                         match_found = False
                         
                         if detected_lang == "my":
-                            # "ဖျား" ပါသော စကားလုံးများကို dynamic weighting/average ပြုလုပ်ရန်အတွက် အပေါ်တွင် သီးသန့် ကိုင်တွယ်ထားပြီးဖြစ်သည်
                             if "ဖျား" in s and "ဖျား" in chunk:
                                 continue
 
@@ -827,9 +830,6 @@ else:
                     clean_input = process_symptom_text(symptom_text, lang=active_lang)
                     X_input = active_tfidf.transform([clean_input])
                     
-                    # ==========================================================
-                    # AVERAGE / DYNAMIC WEIGHTING FOR GENERAL WORDS (FEVER ETC.)
-                    # ==========================================================
                     feature_names = list(active_tfidf.get_feature_names_out())
                     X_dense = X_input.toarray()
                     
