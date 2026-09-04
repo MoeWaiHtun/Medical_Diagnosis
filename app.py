@@ -14,7 +14,6 @@ import nltk
 from nltk.stem import PorterStemmer
 
 # Speech-to-Text Libraries
-import whisper
 from streamlit_mic_recorder import mic_recorder
 
 groq_client = Groq(api_key=st.secrets["GROQ_API_KEY"])
@@ -58,11 +57,6 @@ if "speech_text" not in st.session_state:
 # ==============================================================================
 # WHISPER LOCAL MODEL LOAD
 # ==============================================================================
-@st.cache_resource
-def load_whisper_model():
-    return whisper.load_model("base")
-
-whisper_model = load_whisper_model()
 
 # ==============================================================================
 # PROCESS, MORPHOLOGY & N-GRAM FUNCTIONS
