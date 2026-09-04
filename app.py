@@ -250,6 +250,7 @@ if st.session_state.theme_mode == "dark":
     nav_btn_bg = "#262b3a"
     nav_btn_text = "#ffffff"
     mic_bg = "#1e2130"
+    search_border_color = "#3e4559"
 else:
     bg_color = "#f8f9fa"
     card_bg = "#ffffff"
@@ -265,7 +266,8 @@ else:
     chart_grid_color = "#e2e8f0"
     nav_btn_bg = "#e2e8f0"
     nav_btn_text = "#0f172a"
-    mic_bg = "#ffffff"
+    mic_bg = "transparent"
+    search_border_color = "#FFFFFF"
 
 st.markdown(f"""
 <style>
@@ -298,14 +300,18 @@ st.markdown(f"""
     h3 {{ font-size: 22px !important; font-weight: 600 !important; }}
     h4 {{ font-size: 20px !important; font-weight: 600 !important; }}
 
-    /* Light Mode မီတာ/အသံဖမ်း Recorder အမဲရောင်တန်းကို အဖြူပြင်ခြင်း */
+    /* Light Mode မီတာ/အသံဖမ်း Recorder ဘေးမှ အမဲရောင်တန်းများကို Transparent ပြောင်းခြင်း */
     div[data-testid="stCustomBlock"],
     .stMicRecorder,
     iframe[title="streamlit_mic_recorder.mic_recorder"] {{
         background-color: {mic_bg} !important;
         border-radius: 12px !important;
-        padding: 6px !important;
-        border: 1px solid {border_color} !important;
+        padding: 0px !important;
+        border: none !important;
+    }}
+
+    div[data-testid="stElementContainer"]:has(iframe[title="streamlit_mic_recorder.mic_recorder"]) {{
+        background-color: transparent !important;
     }}
 
     [data-testid="stSidebar"] button[kind="secondary"],
@@ -337,7 +343,19 @@ st.markdown(f"""
         color: #ffffff !important;
     }}
 
-    div[data-baseweb="select"] > div,
+    /* Light Mode Search bar (Selectbox/Multiselect) ၏ Border ကို အဖြူရောင် ပြောင်းပေးခြင်း */
+    div[data-baseweb="select"] > div {{
+        background-color: {input_bg} !important;
+        border-radius: 8px !important;
+        border: 1px solid {search_border_color} !important;
+        color: {text_color} !important;
+    }}
+
+    div[data-baseweb="select"]:hover > div,
+    div[data-baseweb="select"]:focus-within > div {{
+        border-color: {search_border_color} !important;
+    }}
+
     div[data-baseweb="base-input"] > input,
     input[type="text"],
     textarea {{
@@ -649,7 +667,10 @@ else:
                         language="my",
                         initial_prompt="This is a medical symptoms input in Burmese or English language: ဖျားနေတယ်၊ ခေါင်းကိုက်တယ်၊ ချောင်းဆိုးတယ်၊ I have fever and headache."
                     )
-                    st.session_state.speech_text = res.get("text", "").strip()
+                    transcribed_text = res.get("text", "").strip()
+                    if transcribed_text:
+                        st.session_state.speech_text = transcribed_text
+                        st.rerun()
                     
                     if os.path.exists("temp_audio.wav"):
                         os.remove("temp_audio.wav")
