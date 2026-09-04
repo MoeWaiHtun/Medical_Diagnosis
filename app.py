@@ -126,8 +126,8 @@ translations = {
         "nav_kb": "📚 ဆေးပညာ ဗဟုသုတဘဏ်",
         "info_box": "ℹ️ ဤစနစ်သည် Machine Learning အယ်လ်ဂိုရီသမ်များနှင့် TF-IDF N-gram နည်းပညာကို အသုံးပြု၍ ရောဂါ ခန့်မှန်းပေးပါသည်။",
         "pred_title": "🩺 ရောဂါလက္ခဏာ အခြေပြု ခန့်မှန်းစနစ်",
-        "voice_title": "🎙️ အသံဖြင့် ပြောဆိုရန် (Voice Input)",
-        "voice_instruction": "အသံဖမ်းရန် အောက်ပါ ခလုတ်ကို နှိပ်ပါ",
+        "voice_title": "🎙️ Voice Input System",
+        "voice_instruction": "Click button to record speech",
         "select_sym": "ခံစားနေရသော ရောဂါလက္ခဏာများကို ရွေးချယ်ပါ:",
         "input_sym": "သို့မဟုတ် ဖြစ်ပွားနေပုံကို စာဖြင့် ရေးသားဖော်ပြပါ:",
         "placeholder_sym": "ဥပမာ- severe headache သို့မဟုတ် ခေါင်းအရမ်းကိုက်နေတယ်",
@@ -568,15 +568,98 @@ else:
         
         with col1:
             # ==============================================================================
-            # STREAMLIT NATIVE AUDIO INPUT
+            # JAVASCRIPT GREEN BUTTON (WEB SPEECH API)
             # ==============================================================================
-            st.markdown(f"### {t['voice_title']}")
-            
-            if hasattr(st, "audio_input"):
-                audio_value = st.audio_input(t['voice_instruction'])
-                if audio_value:
-                    st.audio(audio_value)
-            
+            speech_lang_code = "my-MM" if st.session_state.lang == "my" else "en-US"
+            voice_html = f"""
+            <div style="background-color: {card_bg}; padding: 18px; border-radius: 12px; border: 1px solid {border_color}; margin-bottom: 20px; text-align: center;">
+                <h4 style="margin-top: 0; color: {text_color}; font-family: sans-serif;">{t['voice_title']}</h4>
+                <p style="color: {text_muted}; font-size: 0.9em; margin-bottom: 12px; font-family: sans-serif;">{t['voice_instruction']}</p>
+                <button id="record_btn" onclick="toggleSpeech()" style="
+                    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                    color: white;
+                    border: none;
+                    padding: 10px 20px;
+                    font-size: 1rem;
+                    font-weight: bold;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                ">
+                    🎤 Record Speech
+                </button>
+                <p id="speech_status" style="color: {text_muted}; font-size: 0.85em; margin-top: 10px; font-family: sans-serif; display: none;"></p>
+            </div>
+
+            <script>
+                var recognizing = false;
+                var recognition;
+
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {{
+                    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    recognition = new SpeechRecognition();
+                    recognition.continuous = false;
+                    recognition.interimResults = false;
+                    recognition.lang = '{speech_lang_code}';
+
+                    recognition.onstart = function() {{
+                        recognizing = true;
+                        var btn = document.getElementById('record_btn');
+                        btn.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+                        btn.innerHTML = '🛑 Stop Recording';
+                        var status = document.getElementById('speech_status');
+                        status.style.display = 'block';
+                        status.innerText = 'Listening... Speak now.';
+                    }};
+
+                    recognition.onend = function() {{
+                        recognizing = false;
+                        var btn = document.getElementById('record_btn');
+                        btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                        btn.innerHTML = '🎤 Record Speech';
+                        var status = document.getElementById('speech_status');
+                        status.style.display = 'none';
+                    }};
+
+                    recognition.onresult = function(event) {{
+                        var transcript = event.results[0][0].transcript;
+                        var parentDoc = window.parent.document;
+                        var inputElements = parentDoc.querySelectorAll('input[type="text"]');
+                        
+                        if (inputElements.length > 0) {{
+                            var targetInput = inputElements[0];
+                            targetInput.value = transcript;
+                            targetInput.dispatchEvent(new Event('input', {{ bubbles: true }}));
+                            targetInput.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                        }}
+                    }};
+
+                    recognition.onerror = function(event) {{
+                        recognizing = false;
+                        var btn = document.getElementById('record_btn');
+                        btn.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                        btn.innerHTML = '🎤 Record Speech';
+                        var status = document.getElementById('speech_status');
+                        status.innerText = 'Error: ' + event.error;
+                    }};
+                }}
+
+                function toggleSpeech() {{
+                    if (!recognition) {{
+                        alert('Speech recognition is not supported in this browser.');
+                        return;
+                    }}
+                    if (recognizing) {{
+                        recognition.stop();
+                    }} else {{
+                        recognition.start();
+                    }}
+                }}
+            </script>
+            """
+            st.components.v1.html(voice_html, height=140)
+
             symptom_cols = [c for c in df_dummy.columns if c.startswith('Symptom') or c.startswith('ရောဂါလက္ခဏာ')]
             all_syms = set()
             for col in symptom_cols:
