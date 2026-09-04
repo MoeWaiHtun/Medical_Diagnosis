@@ -82,16 +82,16 @@ def generate_ngrams(words_list, n):
         ngrams.append(" ".join(words_list[i:i+n]))
     return ngrams
 
-def transcribe_audio(audio_file, lang_code):
+def transcribe_audio(audio_file):
     recognizer = sr.Recognizer()
     try:
         with sr.AudioFile(audio_file) as source:
             audio_data = recognizer.record(source)
-            target_lang = "my-MM" if lang_code == "my" else "en-US"
-            text = recognizer.recognize_google(audio_data, language=target_lang)
+            # English (en-US) သို့သာ သီးသန့် အသေဖမ်းယူရန် ပြင်ဆင်ထားပါသည်
+            text = recognizer.recognize_google(audio_data, language="en-US")
             return text
     except sr.UnknownValueError:
-        return "⚠️ အသံကို သဲသဲကွဲကွဲ မကြားရပါ။ ကျေးဇူးပြု၍ ပြန်လည် အသံဖမ်းပေးပါ။"
+        return "⚠️ Could not understand the audio. Please try again."
     except Exception as e:
         return f"⚠️ Speech Recognition Error: {str(e)}"
 
@@ -143,7 +143,7 @@ translations = {
         "nav_kb": "📚 ဆေးပညာ ဗဟုသုတဘဏ်",
         "info_box": "ℹ️ ဤစနစ်သည် Machine Learning အယ်လ်ဂိုရီသမ်များနှင့် TF-IDF N-gram နည်းပညာကို အသုံးပြု၍ ရောဂါ ခန့်မှန်းပေးပါသည်။",
         "pred_title": "🩺 ရောဂါလက္ခဏာ အခြေပြု ခန့်မှန်းစနစ်",
-        "voice_title": "🎙️ Voice Input System",
+        "voice_title": "🎙️ Voice Input System (English Only)",
         "select_sym": "ခံစားနေရသော ရောဂါလက္ခဏာများကို ရွေးချယ်ပါ:",
         "input_sym": "သို့မဟုတ် ဖြစ်ပွားနေပုံကို စာဖြင့် ရေးသားဖော်ပြပါ:",
         "placeholder_sym": "ဥပမာ- severe headache သို့မဟုတ် ခေါင်းအရမ်းကိုက်နေတယ်",
@@ -185,7 +185,7 @@ translations = {
         "nav_kb": "📚 Knowledge Base",
         "info_box": "ℹ️ This system uses Machine Learning algorithms & TF-IDF N-gram vectorization to predict conditions.",
         "pred_title": "🩺 Symptom-Based Diagnostic System",
-        "voice_title": "🎙️ Voice Input System",
+        "voice_title": "🎙️ Voice Input System (English Only)",
         "select_sym": "Select presenting symptoms:",
         "input_sym": "Or type symptom description:",
         "placeholder_sym": "e.g., severe headache or high fever",
@@ -582,12 +582,12 @@ else:
         col1, col2 = st.columns([2.2, 1])
         
         with col1:
-            # Native Streamlit Voice Input with Speech-to-Text
+            # Native Streamlit Voice Input - English Only
             audio_val = st.audio_input(t["voice_title"])
 
             if audio_val:
-                with st.spinner("🎙️ Converting Speech to Text..."):
-                    result_text = transcribe_audio(audio_val, st.session_state.lang)
+                with st.spinner("🎙️ Transcribing Audio to English Text..."):
+                    result_text = transcribe_audio(audio_val)
                     if not result_text.startswith("⚠️"):
                         st.session_state.transcribed_text = result_text
                         st.success(f"🗣️ Recognized Text: **{result_text}**")
