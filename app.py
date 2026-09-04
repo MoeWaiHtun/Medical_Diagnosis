@@ -56,10 +56,6 @@ if "speech_text" not in st.session_state:
     st.session_state.speech_text = ""
 
 # ==============================================================================
-# WHISPER LOCAL MODEL LOAD
-# ==============================================================================
-
-# ==============================================================================
 # PROCESS, MORPHOLOGY & N-GRAM FUNCTIONS
 # ==============================================================================
 MY_STOPWORDS = [
@@ -230,7 +226,7 @@ if 'active_tab' not in st.session_state:
     st.session_state.active_tab = t['nav_pred']
 
 # ==============================================================================
-# UI STYLES & DYNAMIC THEME SELECTORS (CSS Dynamic Font Size & Light Mode Fix)
+# UI STYLES & DYNAMIC THEME SELECTORS
 # ==============================================================================
 if st.session_state.theme_mode == "dark":
     bg_color = "#0e1117"
@@ -271,7 +267,6 @@ st.markdown(f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Padauk:wght@400;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-    /* Font Sizes ကြီးပေးထားခြင်း */
     html, body, [class*="css"] {{
         font-family: 'Padauk', 'Plus Jakarta Sans', sans-serif !important;
         font-size: 18px !important;
@@ -298,7 +293,6 @@ st.markdown(f"""
     h3 {{ font-size: 22px !important; font-weight: 600 !important; }}
     h4 {{ font-size: 20px !important; font-weight: 600 !important; }}
 
-    /* Light Mode မီတာ/အသံဖမ်း Recorder ဘေးမှ အမဲရောင်တန်းများကို Transparent ပြောင်းခြင်း */
     div[data-testid="stCustomBlock"],
     .stMicRecorder,
     iframe[title="streamlit_mic_recorder.mic_recorder"] {{
@@ -341,7 +335,6 @@ st.markdown(f"""
         color: #ffffff !important;
     }}
 
-    /* Light Mode Search bar (Selectbox/Multiselect) ၏ Border ကို အဖြူရောင် ပြောင်းပေးခြင်း */
     div[data-baseweb="select"] > div {{
         background-color: {input_bg} !important;
         border-radius: 8px !important;
@@ -645,46 +638,40 @@ else:
                 placeholder="Search symptoms..."
             )
 
-            # Voice Input Section (Fast & Fixed)
-        st.markdown("#### 🎙️ အသံဖြင့် ပြောဆိုရန် (Voice Input)")
+            # Voice Input Section
+            st.markdown("#### 🎙️ အသံဖြင့် ပြောဆိုရန် (Voice Input)")
 
-        # Streamlit Native Audio Input သုံးခြင်း (ပိုမိုမြန်ဆန်ပြီး Loop မပတ်ပါ)
-        audio_value = st.audio_input("အသံဖမ်းရန် ခလုတ်ကို နှိပ်ပါ", key="voice_symptom_input")
+            audio_value = st.audio_input("အသံဖမ်းရန် ခလုတ်ကို နှိပ်ပါ", key="voice_symptom_input")
 
-        if audio_value is not None:
-        # ဖိုင်အသစ် ဝင်လာမှသာ API ကို ခေါ်မည်
-            audio_bytes = audio_value.read()
-    
-            # Session State စစ်ဆေးခြင်း
-            if "last_processed_audio" not in st.session_state or st.session_state.last_processed_audio != audio_bytes:
-                with st.spinner("⏳ Converting English speech..."):
-                    try:
-                        audio_file = io.BytesIO(audio_bytes)
-                        audio_file.name = "speech.wav"
+            if audio_value is not None:
+                audio_bytes = audio_value.read()
+                if "last_processed_audio" not in st.session_state or st.session_state.last_processed_audio != audio_bytes:
+                    with st.spinner("⏳ Converting English speech..."):
+                        try:
+                            audio_file = io.BytesIO(audio_bytes)
+                            audio_file.name = "speech.wav"
 
-                        # Turbo model ဖြင့် အမြန်ဆုံး စာသားပြောင်းခြင်း
-                        transcription = groq_client.audio.transcriptions.create(
-                            file=(audio_file.name, audio_file.read()),
-                            model="whisper-large-v3-turbo",
-                            language="en",
-                            response_format="text"
-                        )
+                            transcription = groq_client.audio.transcriptions.create(
+                                file=(audio_file.name, audio_file.read()),
+                                model="whisper-large-v3-turbo",
+                                language="en",
+                                response_format="text"
+                            )
 
-                        transcribed_text = str(transcription).strip()
-                        ignored_phrases = ["thank you", "thank you.", "thanks", "subtitles", "you", ""]
+                            transcribed_text = str(transcription).strip()
+                            ignored_phrases = ["thank you", "thank you.", "thanks", "subtitles", "you", ""]
 
-                        if transcribed_text.lower() not in ignored_phrases and len(transcribed_text) > 2:
-                            st.session_state.speech_text = transcribed_text
-                            st.session_state.last_processed_audio = audio_bytes
-                            st.rerun()
-                        else:
-                            st.warning("⚠️ အသံ သဲသဲကွဲကွဲ မကြားရပါ။ ကျေးဇူးပြု၍ ပြန်ပြောပေးပါ။")
+                            if transcribed_text.lower() not in ignored_phrases and len(transcribed_text) > 2:
+                                st.session_state.speech_text = transcribed_text
+                                st.session_state.last_processed_audio = audio_bytes
+                                st.rerun()
+                            else:
+                                st.warning("⚠️ အသံ သဲသဲကွဲကွဲ မကြားရပါ။ ကျေးဇူးပြု၍ ပြန်ပြောပေးပါ။")
 
-                    except Exception as e:
-                        st.error(f"Audio API error: {e}")
+                        except Exception as e:
+                            st.error(f"Audio API error: {e}")
 
-           
-       
+            # Text Input (Indentation သီးသန့် ထုတ်ထားပါသည်)
             user_text = st.text_input(
                 t["input_sym"], 
                 value=st.session_state.speech_text,
