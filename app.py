@@ -8,6 +8,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 from sklearn.decomposition import PCA
+from gorq import Gorq
 
 import nltk
 from nltk.stem import PorterStemmer
@@ -15,6 +16,8 @@ from nltk.stem import PorterStemmer
 # Speech-to-Text Libraries
 import whisper
 from streamlit_mic_recorder import mic_recorder
+
+groq_client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 try:
     stemmer = PorterStemmer()
@@ -655,28 +658,63 @@ else:
                 key='symptom_mic'
             )
 
+           # if audio_data and 'bytes' in audio_data:
+            #    with st.spinner("⏳ အသံမှ စာသားသို့ ပြောင်းလဲနေပါသည်..."):
+             #       audio_bytes = audio_data['bytes']
+             #       with open("temp_audio.wav", "wb") as f:
+             #           f.write(audio_bytes)
+             #       try:
+              #          res = whisper_model.transcribe(
+              #              "temp_audio.wav",
+               #             language="my",
+                #            fp16=False,
+                #            initial_prompt="This is a medical symptoms input in Burmese or English language: ဖျားနေတယ်၊ ခေါင်းကိုက်တယ်၊ ချောင်းဆိုးတယ်၊ I have fever and headache."
+                #        )
+                 #       transcribed_text = res.get("text", "").strip()
+                 #       if transcribed_text:
+                  #          st.session_state.speech_text = transcribed_text
+                   #         st.rerun()
+                    #except Exception as e:
+                     #   st.error(f"Audio processing error:{e}")
+                    fi#nally:
+                       # if os.path.exists("temp_audio.wav"):
+                        #    os.remove("temp_audio.wav")
+
+
             if audio_data and 'bytes' in audio_data:
-                with st.spinner("⏳ အသံမှ စာသားသို့ ပြောင်းလဲနေပါသည်..."):
-                    audio_bytes = audio_data['bytes']
-                    with open("temp_audio.wav", "wb") as f:
-                        f.write(audio_bytes)
+                audio_bytes = audio_data['bytes']
+    
+                if len(audio_bytes) < 1000:
+                    st.warning("⚠️ အသံဖမ်းယူမှု မရရှိပါ။ ကျေးဇူးပြု၍ စကားကို သေချာကျယ်ကျယ် ပြန်ပြောပေးပါ။")
+                else:
+                    with st.spinner("⏳ Groq AI ဖြင့် ၁ စက္ကန့်အတွင်း စာသားပြောင်းလဲနေပါသည်..."):
+                        temp_filename = "temp_audio.wav"
+                        with open(temp_filename, "wb") as f:
+                            f.write(audio_bytes)
+            
                     try:
-                    # Whisper Transcribe (Burmese + English Prompting)
-                        res = whisper_model.transcribe(
-                            "temp_audio.wav",
+                        with open(temp_filename, "rb") as file:
+                            transcription = groq_client.audio.transcriptions.create(
+                            file=(temp_filename, file.read()),
+                            model="whisper-large-v3",
                             language="my",
-                            fp16=False,
-                            initial_prompt="This is a medical symptoms input in Burmese or English language: ဖျားနေတယ်၊ ခေါင်းကိုက်တယ်၊ ချောင်းဆိုးတယ်၊ I have fever and headache."
+                            prompt="ဖျားတယ်၊ ခေါင်းကိုက်တယ်၊ ချောင်းဆိုးတယ်၊ ဝမ်းသွားတယ်၊ အော့အန်တယ်၊ ရင်ဘတ်အောင့်တယ်။",
+                            response_format="text"
                         )
-                        transcribed_text = res.get("text", "").strip()
-                        if transcribed_text:
-                            st.session_state.speech_text = transcribed_text
-                            st.rerun()
-                    except Exception as e:
-                        st.error(f"Audio processing error:{e}")
-                    finally:
-                        if os.path.exists("temp_audio.wav"):
-                            os.remove("temp_audio.wav")
+                
+                    transcribed_text = str(transcription).strip()
+                    if transcribed_text:
+                        st.session_state.speech_text = transcribed_text
+                        st.rerun()
+                    else:
+                        st.warning("⚠️ အသံကို စာသားပြောင်း၍ မရပါ။ ပြန်ပြောကြည့်ပါ။")
+                    
+                except Exception as e:
+                    st.error(f"Audio API error: {e}")
+                finally:
+                    if os.path.exists(temp_filename):
+                        os.remove(temp_filename)
+            
             
             user_text = st.text_input(
                 t["input_sym"], 
