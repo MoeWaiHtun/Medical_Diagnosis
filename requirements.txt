@@ -6,7 +6,5 @@ scikit-learn
 joblib
 nltk
 streamlit-mic-recorder
-openai-whisper
 xgboost
-torch
 groq
