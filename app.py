@@ -49,19 +49,17 @@ if "selected_symptoms_list" not in st.session_state:
 if "transcribed_text" not in st.session_state:
     st.session_state.transcribed_text = ""
 
-# Track current active tab index (0: Predictor, 1: Models, 2: PCA, 3: KB)
 if 'active_tab_index' not in st.session_state:
     st.session_state.active_tab_index = 0
 
 # ==============================================================================
 # PROCESS, MORPHOLOGY & N-GRAM FUNCTIONS
 # ==============================================================================
-# Stopwords နှင့် အငြင်းစကားလုံးများ (Negations) ပါဝင်သော စာရင်း
 MY_STOPWORDS = [
     "နေတယ်", "နေတာ", "တယ်", "သည်", "တာ", "ခြင်း", "လွန်းလို့", 
     "အရမ်း", "ရမ်း", "ရတာ", "ဖြစ်တယ်", "ဖြစ်နေတာ", "ဖြစ်လို့", "တွေ", "မအီမသာ",
     "နေပါတယ်", "ပါတယ်", "များ", "ကြီး", "တာမျိုးရှိ", "တာမျိုး", "မျိုးရှိ", "ရှိ", "တာ",
-    "မရှိဘူး", "မရှိ", "မပါဘူး", "မပါ", "မဟုတ်ဘူး", "မဟုတ်", "မဖျား"
+    "မရှိဘူး", "မရှိ", "မပါဘူး", "မပါ", "မဟုတ်ဘူး", "မဟုတ်", "မဖျား", "သလိုပဲ", "သလို"
 ]
 
 def clean_myanmar_morphology(text):
@@ -151,7 +149,7 @@ translations = {
         "voice_title": "🎙️ Voice Input System (English Only)",
         "select_sym": "ခံစားနေရသော ရောဂါလက္ခဏာများကို ရွေးချယ်ပါ:",
         "input_sym": "သို့မဟုတ် ဖြစ်ပွားနေပုံကို စာဖြင့် ရေးသားဖော်ပြပါ:",
-        "placeholder_sym": "ဥပမာ- ခေါင်းအရမ်းကိုက်နေတယ်၊ ဖျားတာမျိုးမရှိဘူး",
+        "placeholder_sym": "ဥပမာ- ခေါင်းအရမ်းကိုက်နေတယ်၊ အဖျားနဲနဲရှိသလိုပဲ",
         "matched_sym": "🔍 Matched Symptoms (N-gram & Morphology):",
         "select_model": "အသုံးပြုမည့် AI အယ်လ်ဂိုရီသမ်ကို ရွေးချယ်ပါ:",
         "btn_predict": "🚀 ရောဂါခန့်မှန်းချက် ထုတ်ပြန်မည်",
@@ -194,7 +192,7 @@ translations = {
         "voice_title": "🎙️ Voice Input System (English Only)",
         "select_sym": "Select presenting symptoms:",
         "input_sym": "Or type symptom description:",
-        "placeholder_sym": "e.g., severe headache without fever",
+        "placeholder_sym": "e.g., severe headache with mild fever",
         "matched_sym": "🔍 Matched Symptoms (N-gram & Morphology):",
         "select_model": "Select AI Algorithm:",
         "btn_predict": "🚀 Run Diagnostic Analysis",
@@ -228,7 +226,6 @@ translations = {
 
 t = translations.get(st.session_state.lang, translations["my"])
 
-# Language Toggle Function
 def toggle_language():
     if st.session_state.lang == "my":
         st.session_state.lang = "en"
@@ -237,7 +234,7 @@ def toggle_language():
     st.session_state.selected_symptoms_list = []
 
 # ==============================================================================
-# UI STYLES & DYNAMIC THEME SELECTORS
+# UI STYLES
 # ==============================================================================
 if st.session_state.theme_mode == "dark":
     bg_color = "#0e1117"
@@ -407,7 +404,6 @@ st.markdown(f"""
         color: #ffffff !important;
     }}
 
-    /* INPUT BOX STYLING (EXPANDED HEIGHT, FONT & PADDING) */
     div[data-testid="stTextInput"] input {{
         background-color: {input_bg} !important;
         border-radius: 12px !important;
@@ -633,7 +629,6 @@ else:
             t['nav_kb']
         ]
 
-        # Track Active Navigation Button
         for idx, item in enumerate(nav_items):
             btn_type = "primary" if st.session_state.active_tab_index == idx else "secondary"
             if st.button(item, key=f"nav_btn_{idx}", type=btn_type, use_container_width=True):
@@ -645,7 +640,7 @@ else:
         st.markdown("---")
         st.info(t['info_box'])
 
-    # TAB 1: PREDICTOR (Index 0)
+    # TAB 1: PREDICTOR
     if tab_index == 0:
         st.markdown(f"<h1 class='main-title'>{t['pred_title']}</h1>", unsafe_allow_html=True)
         
@@ -721,17 +716,24 @@ else:
                         continue
                     
                     if detected_lang == "my":
-                        # အငြင်း စကားလုံး ပါ/မပါ စစ်ဆေးခြင်း
                         negation_words = ["မရှိ", "မရှိဘူး", "မပါ", "မပါဘူး", "မဟုတ်", "မဖျား"]
                         has_negation = any(neg in chunk for neg in negation_words)
 
                         chunk_cleaned = clean_myanmar_morphology(chunk_cleaned)
                         
-                        # အငြင်း (Negation) မပါမှသာ "ဖျား" ကို Extract လုပ်မည်
+                        # "ဖျား" ဆိုသည့် စကားလုံး ပါဝင်မှု စစ်ဆေးခြင်း Logic
                         if "ဖျား" in chunk and not has_negation:
-                            for sym in searchable_syms_list:
-                                if "ဖျား" in sym or "အဖျားကြီး" in sym:
-                                    matched.append(sym)
+                            # "နဲနဲ" / "နည်းနည်း" / "ငွေ့ငွေ့" ပါဝင်ပါက "အဖျားငွေ့ငွေ့" ကို ဦးစားပေး စစ်ဆေးမည်
+                            if any(w in chunk for w in ["နဲနဲ", "နည်းနည်း", "ငွေ့ငွေ့"]):
+                                if "အဖျားငွေ့ငွေ့" in searchable_syms_list:
+                                    matched.append("အဖျားငွေ့ငွေ့")
+                                elif "အဖျား" in searchable_syms_list:
+                                    matched.append("အဖျား")
+                            else:
+                                if "အဖျား" in searchable_syms_list:
+                                    matched.append("အဖျား")
+                                elif "ဖျားခြင်း" in searchable_syms_list:
+                                    matched.append("ဖျားခြင်း")
 
                     words = chunk_cleaned.split()
                     
@@ -747,6 +749,10 @@ else:
                         match_found = False
                         
                         if detected_lang == "my":
+                            # "ဖျား" ပါသော စကားလုံးများကို dynamic weighting/average ပြုလုပ်ရန်အတွက် အပေါ်တွင် သီးသန့် ကိုင်တွယ်ထားပြီးဖြစ်သည်
+                            if "ဖျား" in s and "ဖျား" in chunk:
+                                continue
+
                             if s_clean in chunk_cleaned or chunk_cleaned in s_clean:
                                 match_found = True
                             else:
@@ -815,21 +821,22 @@ else:
                     clean_input = process_symptom_text(symptom_text, lang=active_lang)
                     X_input = active_tfidf.transform([clean_input])
                     
-                    if matched and len(matched) > 1:
-                        feature_names = list(active_tfidf.get_feature_names_out())
-                        X_dense = X_input.toarray()
-                        matched_indices = []
-                        for m in matched:
-                            m_clean = m.lower().replace('_', ' ')
-                            for idx, f_name in enumerate(feature_names):
-                                if f_name in m_clean or m_clean in f_name:
-                                    matched_indices.append(idx)
-                        
-                        if matched_indices:
-                            avg_weight = 1.0 / len(matched_indices)
-                            for idx in matched_indices:
-                                X_dense[0, idx] = avg_weight
-                            X_input = X_dense
+                    # ==========================================================
+                    # AVERAGE / DYNAMIC WEIGHTING FOR GENERAL WORDS (FEVER ETC.)
+                    # ==========================================================
+                    feature_names = list(active_tfidf.get_feature_names_out())
+                    X_dense = X_input.toarray()
+                    
+                    general_fever_indices = []
+                    for idx, f_name in enumerate(feature_names):
+                        if any(kw in f_name for kw in ["ဖျား", "အဖျား", "fever"]):
+                            general_fever_indices.append(idx)
+                    
+                    if len(general_fever_indices) > 0 and any("ဖျား" in s or "fever" in s.lower() for s in combined_symptoms):
+                        avg_fever_weight = 1.0 / len(general_fever_indices)
+                        for idx in general_fever_indices:
+                            X_dense[0, idx] = avg_fever_weight
+                        X_input = X_dense
 
                     if not combined_symptoms and (hasattr(X_input, "nnz") and X_input.nnz == 0):
                         st.error(t["no_symptom_found"])
@@ -919,7 +926,7 @@ else:
             else:
                 st.info("Select symptoms to evaluate severity.")
 
-    # TAB 2: MODEL COMPARISON (Index 1)
+    # TAB 2: MODEL COMPARISON
     elif tab_index == 1:
         st.markdown("<h1 class='main-title'>📊 Algorithm Performance Matrix</h1>", unsafe_allow_html=True)
         
@@ -949,7 +956,7 @@ else:
         st.markdown("### Metrics Table")
         st.dataframe(results_df.style.format({'Accuracy': '{:.2%}'}), use_container_width=True)
 
-    # TAB 3: DATA VISUALIZATION (Index 2)
+    # TAB 3: DATA VISUALIZATION
     elif tab_index == 2:
         st.markdown("<h1 class='main-title'>📈 High-Dimensional PCA Clustering</h1>", unsafe_allow_html=True)
         
@@ -994,7 +1001,7 @@ else:
         
         st.plotly_chart(fig, use_container_width=True)
 
-    # TAB 4: MEDICAL KNOWLEDGE BASE (Index 3)
+    # TAB 4: MEDICAL KNOWLEDGE BASE
     elif tab_index == 3:
         st.markdown("<h1 class='main-title'>📚 Diagnostic Condition Directory</h1>", unsafe_allow_html=True)
         
