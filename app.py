@@ -1,5 +1,4 @@
 import base64
-import io
 import os
 import re
 import joblib
@@ -9,15 +8,9 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 from sklearn.decomposition import PCA
-from groq import Groq
 
 import nltk
 from nltk.stem import PorterStemmer
-
-# Speech-to-Text Libraries
-from streamlit_mic_recorder import mic_recorder
-
-groq_client = Groq(api_key=st.secrets["GROQ_API_KEY"])
 
 try:
     stemmer = PorterStemmer()
@@ -52,8 +45,8 @@ if "kb_search_query" not in st.session_state:
 if "selected_symptoms_list" not in st.session_state:
     st.session_state.selected_symptoms_list = []
 
-if "speech_text" not in st.session_state:
-    st.session_state.speech_text = ""
+if "voice_transcript" not in st.session_state:
+    st.session_state.voice_transcript = ""
 
 # ==============================================================================
 # PROCESS, MORPHOLOGY & N-GRAM FUNCTIONS
@@ -136,8 +129,10 @@ translations = {
         "nav_kb": "📚 ဆေးပညာ ဗဟုသုတဘဏ်",
         "info_box": "ℹ️ ဤစနစ်သည် Machine Learning အယ်လ်ဂိုရီသမ်များနှင့် TF-IDF N-gram နည်းပညာကို အသုံးပြု၍ ရောဂါ ခန့်မှန်းပေးပါသည်။",
         "pred_title": "🩺 ရောဂါလက္ခဏာ အခြေပြု ခန့်မှန်းစနစ်",
+        "voice_title": "🎙️ အသံဖြင့် ပြောဆိုရန် (Voice Input)",
+        "voice_instruction": "အသံဖမ်းရန် ခလုတ်ကို နှိပ်ပါ",
         "select_sym": "ခံစားနေရသော ရောဂါလက္ခဏာများကို ရွေးချယ်ပါ:",
-        "input_sym": "သို့မဟုတ် ဖြစ်ပွားနေပုံကို စာဖြင့် ရေးသား/အသံဖြင့် ပြောဆိုပါ:",
+        "input_sym": "သို့မဟုတ် ဖြစ်ပွားနေပုံကို စာဖြင့် ရေးသားဖော်ပြပါ:",
         "placeholder_sym": "ဥပမာ- severe headache သို့မဟုတ် ခေါင်းအရမ်းကိုက်နေတယ်",
         "matched_sym": "🔍 Matched Symptoms (N-gram & Morphology):",
         "select_model": "အသုံးပြုမည့် AI အယ်လ်ဂိုရီသမ်ကို ရွေးချယ်ပါ:",
@@ -177,8 +172,10 @@ translations = {
         "nav_kb": "📚 Knowledge Base",
         "info_box": "ℹ️ This system uses Machine Learning algorithms & TF-IDF N-gram vectorization to predict conditions.",
         "pred_title": "🩺 Symptom-Based Diagnostic System",
+        "voice_title": "🎙️ Voice Input System",
+        "voice_instruction": "Click button to record speech",
         "select_sym": "Select presenting symptoms:",
-        "input_sym": "Or type/speak symptom description:",
+        "input_sym": "Or type symptom description:",
         "placeholder_sym": "e.g., severe headache or high fever",
         "matched_sym": "🔍 Matched Symptoms (N-gram & Morphology):",
         "select_model": "Select AI Algorithm:",
@@ -218,7 +215,6 @@ def toggle_language():
     else:
         st.session_state.lang = "my"
     st.session_state.selected_symptoms_list = []
-    st.session_state.speech_text = ""
     if 'active_tab' in st.session_state:
         del st.session_state.active_tab
 
@@ -243,8 +239,6 @@ if st.session_state.theme_mode == "dark":
     chart_grid_color = "#2d3748"
     nav_btn_bg = "#262b3a"
     nav_btn_text = "#ffffff"
-    mic_bg = "#1e2130"
-    search_border_color = "#3e4559"
 else:
     bg_color = "#f8f9fa"
     card_bg = "#ffffff"
@@ -260,8 +254,6 @@ else:
     chart_grid_color = "#e2e8f0"
     nav_btn_bg = "#e2e8f0"
     nav_btn_text = "#0f172a"
-    mic_bg = "transparent"
-    search_border_color = "#FFFFFF"
 
 st.markdown(f"""
 <style>
@@ -269,7 +261,6 @@ st.markdown(f"""
 
     html, body, [class*="css"] {{
         font-family: 'Padauk', 'Plus Jakarta Sans', sans-serif !important;
-        font-size: 18px !important;
     }}
 
     .stApp {{ 
@@ -282,28 +273,9 @@ st.markdown(f"""
         border-right: 1px solid {border_color};
     }}
 
-    p, label, span, div, li, strong {{
+    p, label, span, div, h1, h2, h3, h4, h5, h6, li, strong {{
         color: {text_color} !important;
-        line-height: 1.6;
-        font-size: 18px !important;
-    }}
-
-    h1 {{ font-size: 32px !important; font-weight: 800 !important; }}
-    h2 {{ font-size: 26px !important; font-weight: 700 !important; }}
-    h3 {{ font-size: 22px !important; font-weight: 600 !important; }}
-    h4 {{ font-size: 20px !important; font-weight: 600 !important; }}
-
-    div[data-testid="stCustomBlock"],
-    .stMicRecorder,
-    iframe[title="streamlit_mic_recorder.mic_recorder"] {{
-        background-color: {mic_bg} !important;
-        border-radius: 12px !important;
-        padding: 0px !important;
-        border: none !important;
-    }}
-
-    div[data-testid="stElementContainer"]:has(iframe[title="streamlit_mic_recorder.mic_recorder"]) {{
-        background-color: transparent !important;
+        line-height: 1.5;
     }}
 
     [data-testid="stSidebar"] button[kind="secondary"],
@@ -314,7 +286,6 @@ st.markdown(f"""
         border-radius: 10px !important;
         padding: 10px 16px !important;
         font-weight: 700 !important;
-        font-size: 18px !important;
         width: 100% !important;
         box-shadow: none !important;
     }}
@@ -335,18 +306,7 @@ st.markdown(f"""
         color: #ffffff !important;
     }}
 
-    div[data-baseweb="select"] > div {{
-        background-color: {input_bg} !important;
-        border-radius: 8px !important;
-        border: 1px solid {search_border_color} !important;
-        color: {text_color} !important;
-    }}
-
-    div[data-baseweb="select"]:hover > div,
-    div[data-baseweb="select"]:focus-within > div {{
-        border-color: {search_border_color} !important;
-    }}
-
+    div[data-baseweb="select"] > div,
     div[data-baseweb="base-input"] > input,
     input[type="text"],
     textarea {{
@@ -354,7 +314,7 @@ st.markdown(f"""
         border-radius: 8px !important;
         border: 1px solid {border_color} !important;
         color: {text_color} !important;
-        font-size: 18px !important;
+        font-size: 1rem !important;
     }}
 
     div[data-baseweb="popover"],
@@ -363,7 +323,6 @@ st.markdown(f"""
     div[data-baseweb="menu"] * {{
         background-color: {dropdown_bg} !important;
         color: {dropdown_text} !important;
-        font-size: 18px !important;
     }}
 
     ul[role="listbox"], 
@@ -397,8 +356,8 @@ st.markdown(f"""
         text-align: center;
     }}
     .onboarding-icon {{ font-size: 3.8rem; margin-bottom: 1rem; }}
-    .onboarding-title {{ font-size: 1.8rem; font-weight: 800; color: {text_color} !important; margin-bottom: 0.6rem; }}
-    .onboarding-desc {{ font-size: 1.1rem; color: {text_muted} !important; line-height: 1.5; margin-bottom: 1.5rem; }}
+    .onboarding-title {{ font-size: 1.6rem; font-weight: 800; color: {text_color} !important; margin-bottom: 0.6rem; }}
+    .onboarding-desc {{ font-size: 0.95rem; color: {text_muted} !important; line-height: 1.5; margin-bottom: 1.5rem; }}
 
     .stMainBlockContainer div.stButton>button {{ 
         background: linear-gradient(135deg, #4c8bf5 0%, #3566d6 100%) !important;
@@ -407,14 +366,13 @@ st.markdown(f"""
         border: none !important;
         padding: 12px 24px !important;
         font-weight: 700 !important;
-        font-size: 18px !important;
         min-height: 48px !important;
         width: 100% !important;
     }}
 
     div[data-testid="stMetricValue"] {{
         color: #4c8bf5 !important;
-        font-size: 2rem !important;
+        font-size: 1.8rem !important;
     }}
 
     .risk-box {{
@@ -423,7 +381,7 @@ st.markdown(f"""
         font-weight: bold;
         text-align: center;
         margin-top: 10px;
-        font-size: 1.1rem;
+        font-size: 1rem;
     }}
     .high-risk {{ background-color: #fee2e2; color: #991b1b !important; border: 1px solid #f87171; }}
     .mod-risk {{ background-color: #fef3c7; color: #92400e !important; border: 1px solid #fbbf24; }}
@@ -441,7 +399,7 @@ st.markdown(f"""
         text-align: center;
         font-weight: 800;
         margin-bottom: 20px;
-        font-size: 2rem;
+        font-size: 1.8rem;
         background: linear-gradient(90deg, #4c8bf5, #a855f7);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
@@ -567,7 +525,7 @@ else:
             )
 
         st.markdown(f"<h2 style='text-align: center;'>🩺 {t['title']}</h2>", unsafe_allow_html=True)
-        st.markdown(f"<p style='text-align: center; color: {text_muted}; font-size: 1em;'>{t['subtitle']}</p>", unsafe_allow_html=True)
+        st.markdown(f"<p style='text-align: center; color: {text_muted}; font-size: 0.9em;'>{t['subtitle']}</p>", unsafe_allow_html=True)
         
         lang_btn_label = "🇬🇧 English" if st.session_state.lang == "my" else "🇲🇲 မြန်မာ"
         theme_btn_label = "☀️ Light" if st.session_state.theme_mode == "dark" else "🌙 Dark"
@@ -612,6 +570,86 @@ else:
         col1, col2 = st.columns([2.2, 1])
         
         with col1:
+            # ==============================================================================
+            # VOICE INPUT PROCESS (ADDED VOICE SUPPORT)
+            # ==============================================================================
+            st.markdown(f"### {t['voice_title']}")
+            
+            # 1. Native Streamlit Audio Recorder Input (Streamlit 1.39+)
+            if hasattr(st, "audio_input"):
+                audio_value = st.audio_input(t['voice_instruction'])
+                if audio_value:
+                    st.audio(audio_value)
+            
+            # 2. Browser Speech Recognition (Web Speech API Integration)
+            speech_lang_code = "my-MM" if st.session_state.lang == "my" else "en-US"
+            voice_html = f"""
+            <div style="background-color: {card_bg}; padding: 15px; border-radius: 12px; border: 1px solid {border_color}; text-align: center;">
+                <p style="margin-bottom: 8px; font-weight: bold; color: {text_color};">{t['voice_instruction']}</p>
+                <button id="record_btn" onclick="toggleSpeech()" style="
+                    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                    color: white; border: none; padding: 10px 20px; border-radius: 8px;
+                    font-weight: bold; cursor: pointer; font-size: 1rem;">
+                    🎤 Record Speech
+                </button>
+                <p id="speech_status" style="margin-top: 8px; font-size: 0.85rem; color: {text_muted};"></p>
+            </div>
+            <script>
+                var recognition;
+                var isRecording = false;
+                if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {{
+                    var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    recognition = new SpeechRecognition();
+                    recognition.continuous = false;
+                    recognition.interimResults = false;
+                    recognition.lang = '{speech_lang_code}';
+
+                    recognition.onresult = function(event) {{
+                        var transcript = event.results[0][0].transcript;
+                        document.getElementById('speech_status').innerText = "Recognized: " + transcript;
+                        
+                        var inputs = window.parent.document.querySelectorAll('input[type="text"]');
+                        for (var i = 0; i < inputs.length; i++) {{
+                            if (inputs[i].placeholder.includes('headache') || inputs[i].placeholder.includes('ခေါင်း')) {{
+                                inputs[i].value = transcript;
+                                inputs[i].dispatchEvent(new Event('input', {{ bubbles: true }}));
+                                inputs[i].dispatchEvent(new Event('change', {{ bubbles: true }}));
+                                break;
+                            }}
+                        }}
+                    }};
+
+                    recognition.onerror = function(event) {{
+                        document.getElementById('speech_status').innerText = "Error: " + event.error;
+                        document.getElementById('record_btn').innerText = "🎤 Record Speech";
+                        isRecording = false;
+                    }};
+
+                    recognition.onend = function() {{
+                        document.getElementById('record_btn').innerText = "🎤 Record Speech";
+                        isRecording = false;
+                    }};
+                }} else {{
+                    document.getElementById('speech_status').innerText = "Speech recognition not supported in this browser.";
+                }}
+
+                function toggleSpeech() {{
+                    if (!recognition) return;
+                    if (!isRecording) {{
+                        recognition.start();
+                        isRecording = true;
+                        document.getElementById('record_btn').innerText = "🛑 Stop & Listen";
+                        document.getElementById('speech_status').innerText = "Listening...";
+                    }} else {{
+                        recognition.stop();
+                        isRecording = false;
+                        document.getElementById('record_btn').innerText = "🎤 Record Speech";
+                    }}
+                }}
+            </script>
+            """
+            st.components.v1.html(voice_html, height=130)
+
             symptom_cols = [c for c in df_dummy.columns if c.startswith('Symptom') or c.startswith('ရောဂါလက္ခဏာ')]
             all_syms = set()
             for col in symptom_cols:
@@ -637,44 +675,9 @@ else:
                 on_change=on_multiselect_change,
                 placeholder="Search symptoms..."
             )
-
-            # Voice Input Section
-            st.markdown("#### 🎙️ အသံဖြင့် ပြောဆိုရန် (Voice Input)")
-
-            audio_value = st.audio_input("အသံဖမ်းရန် ခလုတ်ကို နှိပ်ပါ", key="voice_symptom_input")
-
-            if audio_value is not None:
-                audio_bytes = audio_value.read()
-                if "last_processed_audio" not in st.session_state or st.session_state.last_processed_audio != audio_bytes:
-                    with st.spinner("⏳ Converting English speech..."):
-                        try:
-                            audio_file = io.BytesIO(audio_bytes)
-                            audio_file.name = "speech.wav"
-
-                            transcription = groq_client.audio.transcriptions.create(
-                                file=(audio_file.name, audio_file.read()),
-                                model="whisper-large-v3-turbo",
-                                language="en",
-                                response_format="text"
-                            )
-
-                            transcribed_text = str(transcription).strip()
-                            ignored_phrases = ["thank you", "thank you.", "thanks", "subtitles", "you", ""]
-
-                            if transcribed_text.lower() not in ignored_phrases and len(transcribed_text) > 2:
-                                st.session_state.speech_text = transcribed_text
-                                st.session_state.last_processed_audio = audio_bytes
-                                st.rerun()
-                            else:
-                                st.warning("⚠️ အသံ သဲသဲကွဲကွဲ မကြားရပါ။ ကျေးဇူးပြု၍ ပြန်ပြောပေးပါ။")
-
-                        except Exception as e:
-                            st.error(f"Audio API error: {e}")
-
-            # Text Input (Indentation သီးသန့် ထုတ်ထားပါသည်)
+            
             user_text = st.text_input(
                 t["input_sym"], 
-                value=st.session_state.speech_text,
                 placeholder=t["placeholder_sym"]
             )
             
