@@ -8,3 +8,4 @@ nltk
 streamlit-mic-recorder
 openai-whisper
 xgboost
+torch
