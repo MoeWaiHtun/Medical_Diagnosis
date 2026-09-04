@@ -833,18 +833,26 @@ else:
                     feature_names = list(active_tfidf.get_feature_names_out())
                     X_dense = X_input.toarray()
                     
-                    general_fever_indices = []
-                    for idx, f_name in enumerate(feature_names):
-                        if any(kw in f_name for kw in ["ဖျား", "အဖျား", "fever"]):
-                            general_fever_indices.append(idx)
+                    fever_indices = [
+                        idx for idx, f_name in enumerate(feature_names) 
+                        if any(kw in f_name for kw in ["ဖျား", "အဖျား", "fever"])
+                    ]
                     
-                    if len(general_fever_indices) > 0 and any("ဖျား" in s or "fever" in s.lower() for s in combined_symptoms):
-                        avg_fever_weight = 1.0 / len(general_fever_indices)
-                        for idx in general_fever_indices:
+                    has_fever_input = any(
+                        "ဖျား" in s or "fever" in s.lower() 
+                        for s in combined_symptoms
+                    ) or ("ဖျား" in user_text or "fever" in user_text.lower())
+
+                    if fever_indices and has_fever_input:
+                        non_zero_weights = X_dense[0][X_dense[0] > 0]
+                        avg_fever_weight = float(np.mean(non_zero_weights)) if len(non_zero_weights) > 0 else (1.0 / len(fever_indices))
+                        
+                        for idx in fever_indices:
                             X_dense[0, idx] = avg_fever_weight
+                        
                         X_input = X_dense
 
-                    if not combined_symptoms and (hasattr(X_input, "nnz") and X_input.nnz == 0):
+                    if not combined_symptoms and (hasattr(X_input, "nnz") and X_input.nnz == 0 if not isinstance(X_input, np.ndarray) else np.count_nonzero(X_input) == 0):
                         st.error(t["no_symptom_found"])
                     else:
                         with st.spinner("⏳ Analyzing symptoms..."):
@@ -854,9 +862,9 @@ else:
                                 pred_encoded = current_model.predict(X_input)[0]
                                 probs = current_model.predict_proba(X_input)[0]
                             except Exception:
-                                X_dense = X_input.toarray() if hasattr(X_input, "toarray") else X_input
-                                pred_encoded = current_model.predict(X_dense)[0]
-                                probs = current_model.predict_proba(X_dense)[0]
+                                X_dense_input = X_input.toarray() if hasattr(X_input, "toarray") else X_input
+                                pred_encoded = current_model.predict(X_dense_input)[0]
+                                probs = current_model.predict_proba(X_dense_input)[0]
 
                             pred_disease = active_le.inverse_transform([pred_encoded])[0]
                             confidence = max(probs) * 100
