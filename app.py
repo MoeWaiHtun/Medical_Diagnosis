@@ -57,7 +57,7 @@ if "speech_text" not in st.session_state:
 # ==============================================================================
 @st.cache_resource
 def load_whisper_model():
-    return whisper.load_model("base")
+    return whisper.load_model("tiny")
 
 whisper_model = load_whisper_model()
 
@@ -660,11 +660,12 @@ else:
                     audio_bytes = audio_data['bytes']
                     with open("temp_audio.wav", "wb") as f:
                         f.write(audio_bytes)
-                    
+                    try:
                     # Whisper Transcribe (Burmese + English Prompting)
                     res = whisper_model.transcribe(
                         "temp_audio.wav",
                         language="my",
+                        fp16=False,
                         initial_prompt="This is a medical symptoms input in Burmese or English language: ဖျားနေတယ်၊ ခေါင်းကိုက်တယ်၊ ချောင်းဆိုးတယ်၊ I have fever and headache."
                     )
                     transcribed_text = res.get("text", "").strip()
