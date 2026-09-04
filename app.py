@@ -56,10 +56,11 @@ if 'active_tab_index' not in st.session_state:
 # ==============================================================================
 # PROCESS, MORPHOLOGY & N-GRAM FUNCTIONS
 # ==============================================================================
+# 💡 Stopwords မကြာခဏသုံးသော အသုံးအနှုန်းများ ထပ်မံဖြည့်စွက်ထားပါသည်
 MY_STOPWORDS = [
     "နေတယ်", "နေတာ", "တယ်", "သည်", "တာ", "ခြင်း", "လွန်းလို့", 
     "အရမ်း", "ရမ်း", "ရတာ", "ဖြစ်တယ်", "ဖြစ်နေတာ", "ဖြစ်လို့", "တွေ", "မအီမသာ",
-    "နေပါတယ်", "ပါတယ်", "များ", "ကြီး"
+    "နေပါတယ်", "ပါတယ်", "များ", "ကြီး", "တာမျိုးရှိ", "တာမျိုး", "မျိုးရှိ", "ရှိ", "တာ"
 ]
 
 def clean_myanmar_morphology(text):
@@ -149,7 +150,7 @@ translations = {
         "voice_title": "🎙️ Voice Input System (English Only)",
         "select_sym": "ခံစားနေရသော ရောဂါလက္ခဏာများကို ရွေးချယ်ပါ:",
         "input_sym": "သို့မဟုတ် ဖြစ်ပွားနေပုံကို စာဖြင့် ရေးသားဖော်ပြပါ:",
-        "placeholder_sym": "ဥပမာ- severe headache သို့မဟုတ် fever",
+        "placeholder_sym": "ဥပမာ- ခေါင်းအရမ်းကိုက်နေတယ်၊ ဖျားတာမျိုးရှိ",
         "matched_sym": "🔍 Matched Symptoms (N-gram & Morphology):",
         "select_model": "အသုံးပြုမည့် AI အယ်လ်ဂိုရီသမ်ကို ရွေးချယ်ပါ:",
         "btn_predict": "🚀 ရောဂါခန့်မှန်းချက် ထုတ်ပြန်မည်",
@@ -226,7 +227,7 @@ translations = {
 
 t = translations.get(st.session_state.lang, translations["my"])
 
-# 💡 Fixed Language Toggle Logic (Keep active tab state using active_tab_index)
+# Language Toggle Function
 def toggle_language():
     if st.session_state.lang == "my":
         st.session_state.lang = "en"
@@ -285,7 +286,7 @@ st.markdown(f"""
         color: {text_color} !important; 
     }}
 
-    /* 💡 Move Title & Content Upwards */
+    /* 💡 MOVE TITLE & CONTENT UPWARDS */
     .block-container, div[data-testid="stMainBlockContainer"] {{
         padding-top: 1.5rem !important;
         padding-bottom: 1rem !important;
@@ -356,6 +357,7 @@ st.markdown(f"""
         border: 1px solid {border_color} !important;
         color: {text_color} !important;
         transition: all 0.2s ease-in-out !important;
+        min-height: 48px !important;
     }}
 
     div[data-baseweb="select"] > div:hover {{
@@ -405,27 +407,27 @@ st.markdown(f"""
         color: #ffffff !important;
     }}
 
-    input[type="text"], textarea {{
+    /* 💡 INPUT BOX STYLING (EXPANDED HEIGHT, FONT & PADDING) */
+    div[data-testid="stTextInput"] input {{
         background-color: {input_bg} !important;
-        border-radius: 10px !important;
-        border: 1px solid {border_color} !important;
+        border-radius: 12px !important;
+        border: 2px solid {border_color} !important;
         color: {text_color} !important;
-        font-size: 1rem !important;
+        font-size: 1.15rem !important;
+        padding: 14px 18px !important;
+        height: 52px !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.05) !important;
+    }}
+
+    div[data-testid="stTextInput"] input:focus {{
+        border-color: #4c8bf5 !important;
+        box-shadow: 0 0 0 2px rgba(76, 139, 245, 0.25) !important;
     }}
 
     input::placeholder, textarea::placeholder {{
         color: {placeholder_color} !important;
         opacity: 0.85 !important;
-    }}
-
-    div[data-baseweb="select"] input::placeholder {{
-        color: {placeholder_color} !important;
-        opacity: 0.85 !important;
-    }}
-
-    div[data-baseweb="select"] [data-placeholder="true"] {{
-        color: {placeholder_color} !important;
-        opacity: 0.85 !important;
+        font-size: 1.05rem !important;
     }}
 
     .onboarding-card {{
@@ -631,7 +633,7 @@ else:
             t['nav_kb']
         ]
 
-        # 💡 Track Tab Index to retain position across Language change
+        # Track Active Navigation Button
         for idx, item in enumerate(nav_items):
             btn_type = "primary" if st.session_state.active_tab_index == idx else "secondary"
             if st.button(item, key=f"nav_btn_{idx}", type=btn_type, use_container_width=True):
@@ -720,6 +722,12 @@ else:
                     
                     if detected_lang == "my":
                         chunk_cleaned = clean_myanmar_morphology(chunk_cleaned)
+                        
+                        # 💡 "ဖျား" ဟုပါပါက "အဖျားကြီး" သို့မဟုတ် "ဖျား" ကို ချက်ချင်း မိစေသည့် Logic
+                        if "ဖျား" in chunk:
+                            for sym in searchable_syms_list:
+                                if "ဖျား" in sym or "အဖျားကြီး" in sym:
+                                    matched.append(sym)
 
                     words = chunk_cleaned.split()
                     
