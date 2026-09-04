@@ -8,7 +8,6 @@ import plotly.express as px
 import plotly.graph_objects as go
 import streamlit as st
 from sklearn.decomposition import PCA
-import speech_recognition as sr
 
 import nltk
 from nltk.stem import PorterStemmer
@@ -46,9 +45,6 @@ if "kb_search_query" not in st.session_state:
 if "selected_symptoms_list" not in st.session_state:
     st.session_state.selected_symptoms_list = []
 
-if "transcribed_text" not in st.session_state:
-    st.session_state.transcribed_text = ""
-
 # ==============================================================================
 # PROCESS, MORPHOLOGY & N-GRAM FUNCTIONS
 # ==============================================================================
@@ -81,19 +77,6 @@ def generate_ngrams(words_list, n):
     for i in range(len(words_list) - n + 1):
         ngrams.append(" ".join(words_list[i:i+n]))
     return ngrams
-
-def transcribe_audio(audio_file):
-    recognizer = sr.Recognizer()
-    try:
-        with sr.AudioFile(audio_file) as source:
-            audio_data = recognizer.record(source)
-            # English (en-US) သို့သာ သီးသန့် အသေဖမ်းယူရန် ပြင်ဆင်ထားပါသည်
-            text = recognizer.recognize_google(audio_data, language="en-US")
-            return text
-    except sr.UnknownValueError:
-        return "⚠️ Could not understand the audio. Please try again."
-    except Exception as e:
-        return f"⚠️ Speech Recognition Error: {str(e)}"
 
 # ==============================================================================
 # DYNAMIC MODEL & DATASET LOADERS
@@ -143,7 +126,6 @@ translations = {
         "nav_kb": "📚 ဆေးပညာ ဗဟုသုတဘဏ်",
         "info_box": "ℹ️ ဤစနစ်သည် Machine Learning အယ်လ်ဂိုရီသမ်များနှင့် TF-IDF N-gram နည်းပညာကို အသုံးပြု၍ ရောဂါ ခန့်မှန်းပေးပါသည်။",
         "pred_title": "🩺 ရောဂါလက္ခဏာ အခြေပြု ခန့်မှန်းစနစ်",
-        "voice_title": "🎙️ Voice Input System (English Only)",
         "select_sym": "ခံစားနေရသော ရောဂါလက္ခဏာများကို ရွေးချယ်ပါ:",
         "input_sym": "သို့မဟုတ် ဖြစ်ပွားနေပုံကို စာဖြင့် ရေးသားဖော်ပြပါ:",
         "placeholder_sym": "ဥပမာ- severe headache သို့မဟုတ် ခေါင်းအရမ်းကိုက်နေတယ်",
@@ -185,7 +167,6 @@ translations = {
         "nav_kb": "📚 Knowledge Base",
         "info_box": "ℹ️ This system uses Machine Learning algorithms & TF-IDF N-gram vectorization to predict conditions.",
         "pred_title": "🩺 Symptom-Based Diagnostic System",
-        "voice_title": "🎙️ Voice Input System (English Only)",
         "select_sym": "Select presenting symptoms:",
         "input_sym": "Or type symptom description:",
         "placeholder_sym": "e.g., severe headache or high fever",
@@ -242,10 +223,6 @@ if st.session_state.theme_mode == "dark":
     text_color = "#f0f2f6"
     text_muted = "#a8b2d1"
     border_color = "#3e4559"
-    input_bg = "#262b3a"
-    dropdown_bg = "#1e2130"
-    dropdown_text = "#ffffff"
-    dropdown_hover = "#3566d6"
     plotly_template = "plotly_dark"
     chart_font_color = "#f0f2f6"
     chart_grid_color = "#2d3748"
@@ -257,10 +234,6 @@ else:
     text_color = "#1f2937"
     text_muted = "#4b5563"
     border_color = "#cbd5e1"
-    input_bg = "#ffffff"
-    dropdown_bg = "#ffffff"
-    dropdown_text = "#111827"
-    dropdown_hover = "#2563eb"
     plotly_template = "plotly_white"
     chart_font_color = "#1f2937"
     chart_grid_color = "#e2e8f0"
@@ -318,43 +291,48 @@ st.markdown(f"""
         color: #ffffff !important;
     }}
 
+    /* CUSTOM DROPDOWN & INPUT STYLING (Grey Design) */
     div[data-baseweb="select"] > div,
     div[data-baseweb="base-input"] > input,
     input[type="text"],
     textarea {{
-        background-color: {input_bg} !important;
+        background-color: #e5e7eb !important;
         border-radius: 8px !important;
-        border: 1px solid {border_color} !important;
-        color: {text_color} !important;
-        font-size: 1rem !important;
+        border: 1px solid #9ca3af !important;
+        color: #374151 !important;
+        font-size: 0.95rem !important;
+        font-weight: 500 !important;
     }}
 
     div[data-baseweb="popover"],
-    div[data-baseweb="menu"],
-    div[data-baseweb="popover"] *,
-    div[data-baseweb="menu"] * {{
-        background-color: {dropdown_bg} !important;
-        color: {dropdown_text} !important;
+    div[data-baseweb="popover"] > div,
+    ul[role="listbox"] {{
+        background-color: #d1d5db !important;
+        border-radius: 8px !important;
+        border: 1px solid #9ca3af !important;
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15) !important;
     }}
 
-    ul[role="listbox"], 
     ul[role="listbox"] li,
     div[role="option"] {{
-        background-color: {dropdown_bg} !important;
-        color: {dropdown_text} !important;
+        background-color: transparent !important;
+        color: #4b5563 !important;
+        padding: 10px 14px !important;
+        font-size: 0.9rem !important;
+        border-bottom: 1px solid #e5e7eb !important;
     }}
 
     ul[role="listbox"] li:hover,
     div[role="option"]:hover,
     div[role="option"][aria-selected="true"] {{
-        background-color: {dropdown_hover} !important;
-        color: #ffffff !important;
+        background-color: #9ca3af !important;
+        color: #111827 !important;
     }}
 
-    ul[role="listbox"] li:hover *,
-    div[role="option"]:hover *,
-    div[role="option"][aria-selected="true"] * {{
+    span[data-baseweb="tag"] {{
+        background-color: #9ca3af !important;
         color: #ffffff !important;
+        border-radius: 6px !important;
     }}
 
     .onboarding-card {{
@@ -582,18 +560,6 @@ else:
         col1, col2 = st.columns([2.2, 1])
         
         with col1:
-            # Native Streamlit Voice Input - English Only
-            audio_val = st.audio_input(t["voice_title"])
-
-            if audio_val:
-                with st.spinner("🎙️ Transcribing Audio to English Text..."):
-                    result_text = transcribe_audio(audio_val)
-                    if not result_text.startswith("⚠️"):
-                        st.session_state.transcribed_text = result_text
-                        st.success(f"🗣️ Recognized Text: **{result_text}**")
-                    else:
-                        st.warning(result_text)
-
             symptom_cols = [c for c in df_dummy.columns if c.startswith('Symptom') or c.startswith('ရောဂါလက္ခဏာ')]
             all_syms = set()
             for col in symptom_cols:
@@ -622,7 +588,6 @@ else:
             
             user_text = st.text_input(
                 t["input_sym"], 
-                value=st.session_state.transcribed_text,
                 placeholder=t["placeholder_sym"]
             )
             
