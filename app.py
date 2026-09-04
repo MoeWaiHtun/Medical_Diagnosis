@@ -145,7 +145,7 @@ translations = {
         "voice_title": "🎙️ Voice Input System (English Only)",
         "select_sym": "ခံစားနေရသော ရောဂါလက္ခဏာများကို ရွေးချယ်ပါ:",
         "input_sym": "သို့မဟုတ် ဖြစ်ပွားနေပုံကို စာဖြင့် ရေးသားဖော်ပြပါ:",
-        "placeholder_sym": "ဥပမာ- severe headache သို့မဟုတ် ခေါင်းအရမ်းကိုက်နေတယ်",
+        "placeholder_sym": "ဥပမာ- severe headache သို့မဟုတ် fever",
         "matched_sym": "🔍 Matched Symptoms (N-gram & Morphology):",
         "select_model": "အသုံးပြုမည့် AI အယ်လ်ဂိုရီသမ်ကို ရွေးချယ်ပါ:",
         "btn_predict": "🚀 ရောဂါခန့်မှန်းချက် ထုတ်ပြန်မည်",
@@ -188,7 +188,7 @@ translations = {
         "voice_title": "🎙️ Voice Input System (English Only)",
         "select_sym": "Select presenting symptoms:",
         "input_sym": "Or type symptom description:",
-        "placeholder_sym": "e.g., severe headache or high fever",
+        "placeholder_sym": "e.g., severe headache or fever",
         "matched_sym": "🔍 Matched Symptoms (N-gram & Morphology):",
         "select_model": "Select AI Algorithm:",
         "btn_predict": "🚀 Run Diagnostic Analysis",
@@ -388,16 +388,6 @@ st.markdown(f"""
         border: 1px solid {border_color} !important;
         color: {text_color} !important;
         font-size: 1rem !important;
-    }}
-
-    input::placeholder, textarea::placeholder {{
-        color: {text_muted} !important;
-        opacity: 0.8 !important;
-    }}
-
-    div[data-baseweb="input"] input::placeholder {{
-        color: {text_muted} !important;
-        opacity: 0.8 !important;
     }}
 
     .onboarding-card {{
@@ -717,7 +707,9 @@ else:
                                     match_found = True
                         
                         else:
-                            if s_clean in input_ngrams or s_clean == chunk_cleaned:
+                            # 💡 FIX FOR GENERAL KEYWORDS LIKE "fever":
+                            # If chunk contains a general word (e.g. fever) that matches a sub-symptom (high_fever/mild_fever)
+                            if chunk_cleaned in s_clean or s_clean in input_ngrams or s_clean == chunk_cleaned:
                                 match_found = True
                             else:
                                 s_words = s_clean.split()
@@ -775,8 +767,26 @@ else:
                     clean_input = process_symptom_text(symptom_text, lang=active_lang)
                     X_input = active_tfidf.transform([clean_input])
                     
-                    # 💡 FIX: TF-IDF Non-zero Check (စာသားထဲမှာ ရောဂါလက္ခဏာ လုံးဝမပါပါက Prediction မလုပ်ပါ)
-                    if not combined_symptoms and X_input.nnz == 0:
+                    # 💡 AVERAGE WEIGHT LOGIC FOR GENERAL KEYWORDS (e.g., "fever")
+                    # If multiple sub-symptoms (like high_fever, mild_fever) are matched from a single word
+                    if matched and len(matched) > 1:
+                        feature_names = list(active_tfidf.get_feature_names_out())
+                        X_dense = X_input.toarray()
+                        matched_indices = []
+                        for m in matched:
+                            m_clean = m.lower().replace('_', ' ')
+                            for idx, f_name in enumerate(feature_names):
+                                if f_name in m_clean or m_clean in f_name:
+                                    matched_indices.append(idx)
+                        
+                        if matched_indices:
+                            avg_weight = 1.0 / len(matched_indices)
+                            for idx in matched_indices:
+                                X_dense[0, idx] = avg_weight
+                            X_input = X_dense
+
+                    # TF-IDF Non-zero Check
+                    if not combined_symptoms and (hasattr(X_input, "nnz") and X_input.nnz == 0):
                         st.error(t["no_symptom_found"])
                     else:
                         with st.spinner("⏳ Analyzing symptoms..."):
