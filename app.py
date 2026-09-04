@@ -676,7 +676,7 @@ else:
                    #         st.rerun()
                     #except Exception as e:
                      #   st.error(f"Audio processing error:{e}")
-                    fi#nally:
+                    #finally:
                        # if os.path.exists("temp_audio.wav"):
                         #    os.remove("temp_audio.wav")
 
