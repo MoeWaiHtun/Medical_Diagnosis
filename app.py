@@ -692,28 +692,28 @@ else:
                         with open(temp_filename, "wb") as f:
                             f.write(audio_bytes)
             
-                    try:
-                        with open(temp_filename, "rb") as file:
-                            transcription = groq_client.audio.transcriptions.create(
-                            file=(temp_filename, file.read()),
-                            model="whisper-large-v3",
-                            language="my",
-                            prompt="ဖျားတယ်၊ ခေါင်းကိုက်တယ်၊ ချောင်းဆိုးတယ်၊ ဝမ်းသွားတယ်၊ အော့အန်တယ်၊ ရင်ဘတ်အောင့်တယ်။",
-                            response_format="text"
-                        )
+                        try:
+                            with open(temp_filename, "rb") as file:
+                                transcription = groq_client.audio.transcriptions.create(
+                                file=(temp_filename, file.read()),
+                                model="whisper-large-v3",
+                                language="my",
+                                prompt="ဖျားတယ်၊ ခေါင်းကိုက်တယ်၊ ချောင်းဆိုးတယ်၊ ဝမ်းသွားတယ်၊ အော့အန်တယ်၊ ရင်ဘတ်အောင့်တယ်။",
+                                response_format="text"
+                            )
                 
-                    transcribed_text = str(transcription).strip()
-                    if transcribed_text:
-                        st.session_state.speech_text = transcribed_text
-                        st.rerun()
-                    else:
-                        st.warning("⚠️ အသံကို စာသားပြောင်း၍ မရပါ။ ပြန်ပြောကြည့်ပါ။")
+                            transcribed_text = str(transcription).strip()
+                            if transcribed_text:
+                                st.session_state.speech_text = transcribed_text
+                                st.rerun()
+                            else:
+                                st.warning("⚠️ အသံကို စာသားပြောင်း၍ မရပါ။ ပြန်ပြောကြည့်ပါ။")
                     
-                except Exception as e:
-                    st.error(f"Audio API error: {e}")
-                finally:
-                    if os.path.exists(temp_filename):
-                        os.remove(temp_filename)
+                        except Exception as e:
+                            st.error(f"Audio API error: {e}")
+                        finally:
+                            if os.path.exists(temp_filename):
+                                os.remove(temp_filename)
             
             
             user_text = st.text_input(
