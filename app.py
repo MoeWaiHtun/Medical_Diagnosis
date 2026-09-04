@@ -27,8 +27,7 @@ from utils.text_processing import clean_text, predict_next_words
 st.set_page_config(
     page_title="PulseMind AI - ဆေးဘက်ဆိုင်ရာ အကူအညီပေးစနစ်", 
     page_icon="🏥", 
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="wide"
 )
 
 # Initialize Session States
@@ -234,42 +233,38 @@ if 'active_tab' not in st.session_state:
     st.session_state.active_tab = t['nav_pred']
 
 # ==============================================================================
-# ADVANCED STYLES & DYNAMIC THEMES
+# UI STYLES & DYNAMIC THEME SELECTORS
 # ==============================================================================
 if st.session_state.theme_mode == "dark":
-    bg_color = "#0B0F19"
-    card_bg = "rgba(22, 28, 45, 0.75)"
-    text_color = "#F3F4F6"
-    text_muted = "#9CA3AF"
-    border_color = "rgba(255, 255, 255, 0.1)"
-    input_bg = "rgba(15, 23, 42, 0.6)"
-    dropdown_bg = "#111827"
-    dropdown_text = "#F9FAFB"
-    dropdown_hover = "#3B82F6"
+    bg_color = "#0e1117"
+    card_bg = "#1e2130"
+    text_color = "#f0f2f6"
+    text_muted = "#a8b2d1"
+    border_color = "#3e4559"
+    input_bg = "#262b3a"
+    dropdown_bg = "#1e2130"
+    dropdown_text = "#ffffff"
+    dropdown_hover = "#3566d6"
     plotly_template = "plotly_dark"
-    chart_font_color = "#F3F4F6"
-    chart_grid_color = "#1E293B"
-    nav_btn_bg = "rgba(30, 41, 59, 0.7)"
-    nav_btn_text = "#E2E8F0"
-    glass_border = "1px solid rgba(255, 255, 255, 0.08)"
-    accent_glow = "0 8px 32px 0 rgba(0, 0, 0, 0.37)"
+    chart_font_color = "#f0f2f6"
+    chart_grid_color = "#2d3748"
+    nav_btn_bg = "#262b3a"
+    nav_btn_text = "#ffffff"
 else:
-    bg_color = "#F8FAFC"
-    card_bg = "rgba(255, 255, 255, 0.85)"
-    text_color = "#0F172A"
-    text_muted = "#64748B"
-    border_color = "rgba(226, 232, 240, 0.8)"
-    input_bg = "#FFFFFF"
-    dropdown_bg = "#FFFFFF"
-    dropdown_text = "#0F172A"
-    dropdown_hover = "#2563EB"
+    bg_color = "#f8f9fa"
+    card_bg = "#ffffff"
+    text_color = "#1f2937"
+    text_muted = "#4b5563"
+    border_color = "#cbd5e1"
+    input_bg = "#ffffff"
+    dropdown_bg = "#ffffff"
+    dropdown_text = "#111827"
+    dropdown_hover = "#2563eb"
     plotly_template = "plotly_white"
-    chart_font_color = "#0F172A"
-    chart_grid_color = "#E2E8F0"
-    nav_btn_bg = "#F1F5F9"
-    nav_btn_text = "#334155"
-    glass_border = "1px solid rgba(226, 232, 240, 0.9)"
-    accent_glow = "0 10px 25px -5px rgba(0, 0, 0, 0.05)"
+    chart_font_color = "#1f2937"
+    chart_grid_color = "#e2e8f0"
+    nav_btn_bg = "#e2e8f0"
+    nav_btn_text = "#0f172a"
 
 st.markdown(f"""
 <style>
@@ -281,72 +276,68 @@ st.markdown(f"""
 
     .stApp {{ 
         background-color: {bg_color} !important; 
-        color: {text_color} !important;
-        background-image: radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
-                          radial-gradient(at 100% 100%, rgba(168, 85, 247, 0.08) 0px, transparent 50%);
+        color: {text_color} !important; 
     }}
     
     [data-testid="stSidebar"] {{
         background-color: {card_bg} !important;
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border-right: {glass_border} !important;
+        border-right: 1px solid {border_color};
     }}
 
     p, label, span, div, h1, h2, h3, h4, h5, h6, li, strong {{
         color: {text_color} !important;
-        line-height: 1.6;
+        line-height: 1.5;
     }}
 
-    /* Sidebar Gap & Compact Layout */
+    /* Sidebar Gap Compact Fixes */
     [data-testid="stSidebar"] [data-testid="stVerticalBlock"] > div {{
-        gap: 0.35rem !important;
+        gap: 0.4rem !important;
     }}
 
     [data-testid="stSidebar"] button[kind="secondary"],
     [data-testid="stSidebar"] button[kind="primary"],
     [data-testid="stSidebar"] .stButton > button {{
-        border-radius: 12px !important;
-        padding: 10px 16px !important;
-        font-weight: 600 !important;
+        border-radius: 10px !important;
+        padding: 8px 14px !important;
+        font-weight: 700 !important;
         width: 100% !important;
         box-shadow: none !important;
         margin-top: 0px !important;
         margin-bottom: 0px !important;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }}
 
     [data-testid="stSidebar"] button[kind="secondary"] {{
         background-color: {nav_btn_bg} !important;
         color: {nav_btn_text} !important;
-        border: {glass_border} !important;
+        border: 1px solid {border_color} !important;
     }}
 
-    [data-testid="stSidebar"] button[kind="secondary"]:hover {{
-        border-color: #3B82F6 !important;
-        transform: translateY(-1px);
+    [data-testid="stSidebar"] button[kind="secondary"] * {{
+        color: {nav_btn_text} !important;
     }}
 
     [data-testid="stSidebar"] button[kind="primary"] {{
-        background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%) !important;
-        color: #FFFFFF !important;
+        background: linear-gradient(135deg, #4c8bf5 0%, #3566d6 100%) !important;
+        color: #ffffff !important;
         border: none !important;
-        box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.39) !important;
     }}
 
-    /* Modern Dropdown & Select Inputs */
+    [data-testid="stSidebar"] button[kind="primary"] * {{
+        color: #ffffff !important;
+    }}
+
+    /* Select Box & Multiselect Styling */
     div[data-baseweb="select"] > div {{
         background-color: {input_bg} !important;
-        border-radius: 12px !important;
-        border: {glass_border} !important;
+        border-radius: 10px !important;
+        border: 1px solid {border_color} !important;
         color: {text_color} !important;
-        backdrop-filter: blur(8px);
-        transition: all 0.2s ease !important;
+        transition: all 0.2s ease-in-out !important;
     }}
 
     div[data-baseweb="select"] > div:hover {{
-        border-color: #3B82F6 !important;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+        border-color: #4c8bf5 !important;
+        box-shadow: 0 0 0 1px #4c8bf5 !important;
     }}
 
     div[data-baseweb="select"] input,
@@ -359,19 +350,19 @@ st.markdown(f"""
     div[data-baseweb="menu"],
     ul[role="listbox"] {{
         background-color: {dropdown_bg} !important;
-        border: {glass_border} !important;
-        border-radius: 14px !important;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 10px !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
     }}
 
     li[role="option"],
     div[role="option"] {{
         background-color: {dropdown_bg} !important;
         color: {dropdown_text} !important;
-        border-radius: 8px !important;
-        margin: 3px 6px !important;
-        padding: 10px 14px !important;
-        transition: all 0.15s ease !important;
+        border-radius: 6px !important;
+        margin: 2px 6px !important;
+        padding: 8px 12px !important;
+        transition: background-color 0.15s ease !important;
     }}
 
     li[role="option"]:hover,
@@ -379,114 +370,82 @@ st.markdown(f"""
     li[role="option"][aria-selected="true"],
     div[role="option"][aria-selected="true"] {{
         background-color: {dropdown_hover} !important;
-        color: #FFFFFF !important;
+        color: #ffffff !important;
     }}
 
     span[data-baseweb="tag"] {{
-        background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%) !important;
-        border-radius: 8px !important;
-        padding: 2px 8px !important;
+        background-color: #3566d6 !important;
+        border-radius: 6px !important;
     }}
     
     span[data-baseweb="tag"] span {{
-        color: #FFFFFF !important;
+        color: #ffffff !important;
     }}
 
     input[type="text"], textarea {{
         background-color: {input_bg} !important;
-        border-radius: 12px !important;
-        border: {glass_border} !important;
+        border-radius: 10px !important;
+        border: 1px solid {border_color} !important;
         color: {text_color} !important;
-        padding: 12px 16px !important;
-        font-size: 0.95rem !important;
-    }}
-
-    input[type="text"]:focus, textarea:focus {{
-        border-color: #3B82F6 !important;
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
-    }}
-
-    /* UI Cards & Containers */
-    .glass-card {{
-        background: {card_bg};
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border: {glass_border};
-        border-radius: 20px;
-        padding: 24px;
-        box-shadow: {accent_glow};
-        margin-bottom: 20px;
+        font-size: 1rem !important;
     }}
 
     .onboarding-card {{
-        max-width: 460px;
-        margin: 3rem auto;
-        background: {card_bg};
-        backdrop-filter: blur(16px);
+        max-width: 440px;
+        margin: 2rem auto;
+        background: {card_bg} !important;
         border-radius: 24px;
         padding: 2.5rem 2rem;
-        box-shadow: {accent_glow};
-        border: {glass_border};
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+        border: 1px solid {border_color} !important;
         text-align: center;
     }}
-    .onboarding-icon {{ font-size: 4rem; margin-bottom: 1.2rem; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15)); }}
-    .onboarding-title {{ font-size: 1.75rem; font-weight: 800; color: {text_color} !important; margin-bottom: 0.8rem; letter-spacing: -0.02em; }}
-    .onboarding-desc {{ font-size: 0.98rem; color: {text_muted} !important; line-height: 1.6; margin-bottom: 1.8rem; }}
+    .onboarding-icon {{ font-size: 3.8rem; margin-bottom: 1rem; }}
+    .onboarding-title {{ font-size: 1.6rem; font-weight: 800; color: {text_color} !important; margin-bottom: 0.6rem; }}
+    .onboarding-desc {{ font-size: 0.95rem; color: {text_muted} !important; line-height: 1.5; margin-bottom: 1.5rem; }}
 
     .stMainBlockContainer div.stButton>button {{ 
-        background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%) !important;
-        color: #FFFFFF !important; 
+        background: linear-gradient(135deg, #4c8bf5 0%, #3566d6 100%) !important;
+        color: #ffffff !important; 
         border-radius: 12px !important; 
         border: none !important;
-        padding: 14px 28px !important;
+        padding: 12px 24px !important;
         font-weight: 700 !important;
-        min-height: 50px !important;
+        min-height: 48px !important;
         width: 100% !important;
-        box-shadow: 0 4px 14px 0 rgba(37, 99, 235, 0.39) !important;
-        transition: all 0.25s ease !important;
-    }}
-
-    .stMainBlockContainer div.stButton>button:hover {{
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px 0 rgba(37, 99, 235, 0.45) !important;
     }}
 
     div[data-testid="stMetricValue"] {{
-        color: #3B82F6 !important;
-        font-size: 2.2rem !important;
-        font-weight: 800 !important;
+        color: #4c8bf5 !important;
+        font-size: 1.8rem !important;
     }}
 
-    /* Risk Badges */
     .risk-box {{
-        padding: 14px 18px;
-        border-radius: 12px;
-        font-weight: 700;
+        padding: 12px;
+        border-radius: 8px;
+        font-weight: bold;
         text-align: center;
-        margin-top: 14px;
-        font-size: 0.95rem;
-        letter-spacing: 0.01em;
+        margin-top: 10px;
+        font-size: 1rem;
     }}
-    .high-risk {{ background: rgba(239, 68, 68, 0.15); color: #EF4444 !important; border: 1px solid rgba(239, 68, 68, 0.3); }}
-    .mod-risk {{ background: rgba(245, 158, 11, 0.15); color: #F59E0B !important; border: 1px solid rgba(245, 158, 11, 0.3); }}
-    .low-risk {{ background: rgba(16, 185, 129, 0.15); color: #10B981 !important; border: 1px solid rgba(16, 185, 129, 0.3); }}
+    .high-risk {{ background-color: #fee2e2; color: #991b1b !important; border: 1px solid #f87171; }}
+    .mod-risk {{ background-color: #fef3c7; color: #92400e !important; border: 1px solid #fbbf24; }}
+    .low-risk {{ background-color: #d1fae5; color: #065f46 !important; border: 1px solid #34d399; }}
 
     .result-info {{
-        background: {card_bg};
-        backdrop-filter: blur(12px);
-        border: {glass_border};
-        border-radius: 16px;
-        padding: 20px;
+        background-color: {card_bg} !important;
+        border: 1px solid {border_color} !important;
+        border-radius: 12px;
+        padding: 18px;
         margin-bottom: 20px;
     }}
 
     .main-title {{
         text-align: center;
         font-weight: 800;
-        margin-bottom: 28px;
-        font-size: 2.1rem;
-        letter-spacing: -0.03em;
-        background: linear-gradient(135deg, #60A5FA 0%, #A855F7 100%);
+        margin-bottom: 20px;
+        font-size: 1.8rem;
+        background: linear-gradient(90deg, #4c8bf5, #a855f7);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }}
@@ -585,17 +544,16 @@ else:
 
             st.markdown(
                 f"""
-                <div style="text-align: center; margin-bottom: 12px;">
+                <div style="text-align: center;">
                     <img src="data:image/jpeg;base64,{img}"
                          style="
-                            width: 84px;
-                            height: 84px;
+                            width: 90px;
+                            height: 90px;
                             border-radius: 50%;
                             object-fit: cover;
                             display: block;
                             margin: auto;
-                            border: 3px solid #3B82F6;
-                            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+                            border: 3px solid #4c8bf5;
                          ">
                 </div>
                 """,
@@ -604,15 +562,15 @@ else:
         except FileNotFoundError:
             st.markdown(
                 """
-                <div style="text-align: center; font-size: 3.8rem; margin-bottom: 0.3rem;">
+                <div style="text-align: center; font-size: 4.5rem; margin-bottom: 0.5rem;">
                     🩺
                 </div>
                 """,
                 unsafe_allow_html=True
             )
 
-        st.markdown(f"<h2 style='text-align: center; font-weight: 800; font-size: 1.5rem; margin-bottom: 2px;'>{t['title']}</h2>", unsafe_allow_html=True)
-        st.markdown(f"<p style='text-align: center; color: {text_muted}; font-size: 0.85em; margin-bottom: 16px;'>{t['subtitle']}</p>", unsafe_allow_html=True)
+        st.markdown(f"<h2 style='text-align: center;'>🩺 {t['title']}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<p style='text-align: center; color: {text_muted}; font-size: 0.9em;'>{t['subtitle']}</p>", unsafe_allow_html=True)
         
         lang_btn_label = "🇬🇧 English" if st.session_state.lang == "my" else "🇲🇲 မြန်မာ"
         theme_btn_label = "☀️ Light" if st.session_state.theme_mode == "dark" else "🌙 Dark"
@@ -625,8 +583,8 @@ else:
                 st.session_state.theme_mode = "light" if st.session_state.theme_mode == "dark" else "dark"
                 st.rerun()
 
-        st.markdown("<hr style='margin: 12px 0; border-color: rgba(255,255,255,0.08);'>", unsafe_allow_html=True)
-        st.markdown(f"<p style='font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; color: {text_muted}; margin-bottom: 8px;'>{t['nav_header']}</p>", unsafe_allow_html=True)
+        st.markdown("---")
+        st.markdown(f"**{t['nav_header']}**")
 
         nav_items = [
             t['nav_pred'],
@@ -643,7 +601,7 @@ else:
 
         tab_choice = st.session_state.active_tab
 
-        st.markdown("<hr style='margin: 12px 0; border-color: rgba(255,255,255,0.08);'>", unsafe_allow_html=True)
+        st.markdown("---")
         st.info(t['info_box'])
 
     # TAB 1: PREDICTOR
@@ -653,7 +611,6 @@ else:
         col1, col2 = st.columns([2.2, 1])
         
         with col1:
-            st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
             # Native Streamlit Voice Input - English Only
             audio_val = st.audio_input(t["voice_title"])
 
@@ -790,7 +747,6 @@ else:
             )
             
             predict_btn = st.button(t["btn_predict"], use_container_width=True)
-            st.markdown("</div>", unsafe_allow_html=True)
             
             if predict_btn:
                 combined_symptoms = list(st.session_state.selected_symptoms_list)
@@ -820,12 +776,12 @@ else:
                         top3_idx = np.argsort(probs)[-3:][::-1]
                         top3 = [(active_le.inverse_transform([idx])[0], probs[idx]*100) for idx in top3_idx]
                     
-                    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+                    st.markdown("---")
                     st.markdown(f"<h3>{t['res_title']}</h3>", unsafe_allow_html=True)
                     
                     st.markdown(f"""
                     <div class='result-info'>
-                        <h2 style='color: #3B82F6; margin-top:0;'>{pred_disease}</h2>
+                        <h2 style='color: #4c8bf5; margin-top:0;'>{pred_disease}</h2>
                         <p style='color: {text_muted}; font-size: 1.1em;'>{t['confidence']} <strong>{confidence:.2f}%</strong></p>
                     </div>
                     """, unsafe_allow_html=True)
@@ -864,10 +820,8 @@ else:
                     fig.update_yaxes(tickfont=dict(color=chart_font_color), title_font=dict(color=chart_font_color), gridcolor=chart_grid_color)
                     fig.update_traces(texttemplate='%{x:.1f}%', textposition='outside')
                     st.plotly_chart(fig, use_container_width=True)
-                    st.markdown("</div>", unsafe_allow_html=True)
         
         with col2:
-            st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
             st.markdown(f"<h3 style='text-align: center;'>{t['quick_info']}</h3>", unsafe_allow_html=True)
             
             active_severity_dict = severity_dict
@@ -889,7 +843,6 @@ else:
                     st.markdown(f"<div class='risk-box low-risk'>{t['sev_low']}</div>", unsafe_allow_html=True)
             else:
                 st.info("Select symptoms to evaluate severity.")
-            st.markdown("</div>", unsafe_allow_html=True)
 
     # TAB 2: MODEL COMPARISON
     elif tab_choice == t['nav_models']:
@@ -897,7 +850,6 @@ else:
         
         results_df = pd.DataFrame(results)
         
-        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
         st.markdown("### Accuracy Score Comparison")
         fig = px.bar(
             results_df, 
@@ -918,12 +870,9 @@ else:
         fig.update_xaxes(tickfont=dict(color=chart_font_color), title_font=dict(color=chart_font_color), gridcolor=chart_grid_color)
         fig.update_yaxes(tickfont=dict(color=chart_font_color), title_font=dict(color=chart_font_color), gridcolor=chart_grid_color)
         st.plotly_chart(fig, use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
         
-        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
         st.markdown("### Metrics Table")
         st.dataframe(results_df.style.format({'Accuracy': '{:.2%}'}), use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
 
     # TAB 3: DATA VISUALIZATION (PCA)
     elif tab_choice == t['nav_pca']:
@@ -968,9 +917,7 @@ else:
             gridcolor=chart_grid_color
         )
         
-        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
         st.plotly_chart(fig, use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
 
     # TAB 4: MEDICAL KNOWLEDGE BASE
     elif tab_choice == t['nav_kb']:
@@ -985,13 +932,11 @@ else:
             st.session_state.kb_search_input = suggested_text
             st.session_state.kb_search_query = suggested_text
 
-        st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
         search_q = st.text_input(
             t["search_kb"], 
             key="kb_search_input"
         )
         st.session_state.kb_search_query = search_q
-        st.markdown("</div>", unsafe_allow_html=True)
         
         filtered_diseases = [d for d in diseases if search_q.lower() in d.lower()] if search_q.strip() else diseases
         
