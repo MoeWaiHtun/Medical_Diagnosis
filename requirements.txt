@@ -1,0 +1,9 @@
+streamlit
+pandas
+numpy
+plotly
+scikit-learn
+joblib
+nltk
+streamlit-mic-recorder
+openai-whisper

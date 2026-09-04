@@ -1,0 +1,134 @@
+﻿Symptom,ရောဂါလက္ခဏာ (မြန်မာ),ပြင်းထန်မှုအဆင့်
+itching,ယားယံ,1
+skin_rash,အရေပြားပေါ် အဖုအပိန့်ထ,3
+nodal_skin_eruptions,အရေပြား အဖုအကျိတ်ထ,4
+continuous_sneezing,ဆက်တိုက် နှာချေ,4
+shivering,တုန်ချမ်း,5
+chills,ချမ်းစိမ့်စိမ့်ဖြစ်,3
+joint_pain,အဆစ်အမြစ်နာ,3
+stomach_pain,အစာအိမ်နာ,5
+acidity,အက်ဆစ်ဓာတ်များ,3
+ulcers_on_tongue,လျှာတွင် အနာဖြစ်,4
+muscle_wasting,ကြွက်သား သိမ်လှီ,3
+vomiting,အန်,5
+burning_micturition,ဆီးပူ / ဆီးကျင်,6
+spotting_urination,ဆီးစက်ရုံမျှ သွား,6
+fatigue,မောပန်းနွမ်းနယ်,4
+weight_gain,ကိုယ်အလေးချိန် တိုး,3
+anxiety,စိုးရိမ်ပူပန်စိတ်များ,4
+cold_hands_and_feets,ခြေလက်များ အေးစက်,5
+mood_swings,စိတ်ခံစားချက် မတည်ငြိမ်,3
+weight_loss,ကိုယ်အလေးချိန် လျော့ကျ,3
+restlessness,ဂဏှာမငြိမ်ဖြစ်,5
+lethargy,နဂိုအတိုင်း အားအင်မရှိ မှေးမှိုင်,2
+patches_in_throat,လည်ချောင်းတွင် အကွက်များဖြစ်,6
+irregular_sugar_level,သွေးတွင်းသကြားဓာတ် မမှန်,5
+cough,ချောင်းဆိုး,4
+high_fever,အဖျားကြီး,7
+sunken_eyes,မျက်တွင်းဟောက်ပိုင်ဖြစ်,3
+breathlessness,အသက်ရှူရခက်ခဲ / မော,4
+sweating,ချွေးထွက်လွန်,3
+dehydration,ရေဓာတ်ခမ်းခြောက်,4
+indigestion,အစာမကြေဖြစ်,5
+headache,ခေါင်းကိုက်,3
+yellowish_skin,အရေပြား ဝါ,3
+dark_urine,ဆီးအရောင် ရင့်/ရဲ,4
+nausea,ပျို့အန်ချင်,5
+loss_of_appetite,ခံတွင်းပျက် / အစားအသောက်ပျက်,4
+pain_behind_the_eyes,မျက်လုံးအိမ် အနောက်ဘက် အောင့်နာ,4
+back_pain,ခါးနာ / ကျောနာ,3
+constipation,ဝမ်းချုပ်,4
+abdominal_pain,ဗိုက်နာ / ဗိုက်အောင့်,4
+diarrhoea,ဝမ်းလျှော,6
+mild_fever,အဖျားငွေ့ငွေ့ရှိ,5
+yellow_urine,ဆီးဝါ,4
+yellowing_of_eyes,မျက်လုံးဝါ,4
+acute_liver_failure,ရုတ်တရက် အသည်းပျက်စီး,6
+fluid_overload,ခန္ဓာကိုယ်တွင်း အရည်များပြည့်,6
+swelling_of_stomach,ဗိုက်ဖောင်းရောင်,7
+swelled_lymph_nodes,တက်စိ/ပြသီး ရောင်,6
+malaise,ကိုယ်လက်မအီမသာဖြစ်,6
+blurred_and_distorted_vision,အမြင်အာရုံ ဝေဝါး/ပြောင်းလဲ,5
+phlegm,သလိပ်ထွက်,5
+throat_irritation,လည်ချောင်းယား / ယားယံ,4
+redness_of_eyes,မျက်လုံးနီ,5
+sinus_pressure,နှာခေါင်းမုခ်ဝ ဖိအားများခြင်း (ထိပ်ကပ်နာ),4
+runny_nose,နှာရည်ယို,5
+congestion,နှာခေါင်းပိတ်,5
+chest_pain,ရင်ဘတ်အောင့် / ရင်ဘတ်နာ,7
+weakness_in_limbs,ခြေလက်များ အားနည်း,7
+fast_heart_rate,နှလုံးခုန်မြန်,5
+pain_during_bowel_movements,ဝမ်းသွားစဉ် နာကျင်,5
+pain_in_anal_region,စပါးပေါက်/စပလိန်ဝ နာကျင်,6
+bloody_stool,ဝမ်းတွင် သွေးပါ,5
+irritation_in_anus,စပါးပေါက်/စပလိန်ဝ ယားယံ,6
+neck_pain,ဇက်နာ / လည်ပင်းနာ,5
+dizziness,ခေါင်းမူး,4
+cramps,ကြွက်တက်,4
+bruising,အညိုအမဲစွဲ,4
+obesity,အဝလွန်,4
+swollen_legs,ခြေထောက်များ ရောင်,5
+swollen_blood_vessels,သွေးကြောများ ရောင်ရမ်း,5
+puffy_face_and_eyes,မျက်နှာနှင့် မျက်လုံး ဖောင်းအိ,5
+enlarged_thyroid,သိုင်းရွိုက်ဂလင်း ကြီး,6
+brittle_nails,လက်သည်း/ခြေသည်း ကျိုးလွယ်,5
+swollen_extremeties,ခြေလက်အစွန်းများ ရောင်,5
+excessive_hunger,အလွန်အမင်း ဆာလောင်,4
+extra_marital_contacts,အိမ်ထောင်ပြင်ပ ကာမဆက်ဆံဖူး,5
+drying_and_tingling_lips,နှုတ်ခမ်း ခြောက်သွေ့ထုံကျင်,4
+slurred_speech,စကားပြော ဗာရာဏသီဖြစ် / စကားမပီ,4
+knee_pain,ဒူးနာ,3
+hip_joint_pain,တင်ပါးဆုံအဆစ် နာ,2
+muscle_weakness,ကြွက်သား အားနည်း,2
+stiff_neck,ဇက်တောင့်,4
+swelling_joints,အဆစ်များ ရောင်,5
+movement_stiffness,လှုပ်ရှားရ ခက်ခဲတောင့်တင်း,5
+spinning_movements,ချာချာလည် မူးဝေ,6
+loss_of_balance,ဟန်ချက်ပျက်,4
+unsteadiness,ခြေလှမ်း မခိုင်,4
+weakness_of_one_body_side,ခန္ဓာကိုယ် တစ်ခြမ်း အားနည်း,4
+loss_of_smell,အနံ့မရ,3
+bladder_discomfort,ဆီးအိမ် မသက်မသာဖြစ်,4
+foul_smell_ofurine,ဆီးအနံ့ဆိုး,5
+continuous_feel_of_urine,ဆီးခဏခဏ သွားချင်စိတ်ဖြစ်,6
+passage_of_gases,လေပွ / လေလည်,5
+internal_itching,အတွင်းပိုင်း ယားယံ,4
+toxic_look_(typhos),ရောဂါပြင်းထန်၍ မျက်နှာ နွမ်းနယ်ကြည်လင်မှုမရှိ,5
+depression,စိတ်ဓာတ်ကျ,3
+irritability,စိတ်တိုလွယ် / စိတ်ဆတ်,2
+muscle_pain,ကြွက်သားများ ကိုက်ခဲနာကျင်,2
+altered_sensorium,သတိအသိစိတ် မမှန်,2
+red_spots_over_body,ခန္ဓာကိုယ်ပေါ် အနီစက်များထ,3
+belly_pain,ဝမ်းဗိုက် အောင့်နာ,4
+abnormal_menstruation,ရာသီသွေး မမှန်,6
+dischromic_patches,အရေပြား အရောင်ပြောင်း အကွက်များဖြစ်,6
+watering_from_eyes,မျက်ရည်ယို,4
+increased_appetite,အစားလွန်စွာ စားချင်,5
+polyuria,ဆီးခဏခဏ သွား,4
+family_history,မိသားစု ရောဂါရာဇဝင်ရှိ,5
+mucoid_sputum,အချွဲသလိပ် ပါ,4
+rusty_sputum,ကြေးနီရောင်/သွေးစပါသော သလိပ်ထွက်,4
+lack_of_concentration,အာရုံစူးစိုက်မှု မရ,3
+visual_disturbances,အမြင်အာရုံ ပုံမှန်မဟုတ်,3
+receiving_blood_transfusion,သွေးသွင်းဖူးသည့် ရာဇဝင်ရှိ,5
+receiving_unsterile_injections,မသန့်ရှင်းသော ဆေးထိုးအပ် သုံးဖူး,2
+coma,သတိလစ် မေ့မြော,7
+stomach_bleeding,အစာအိမ် သွေးယို,6
+distention_of_abdomen,ဝမ်းဗိုက် လေပွဖောင်း,4
+history_of_alcohol_consumption,အရက်သောက်သုံးသည့် ရာဇဝင်ရှိ,5
+fluid_overload,ခန္ဓာကိုယ်တွင်း အရည်များပြည့်,4
+blood_in_sputum,သလိပ်တွင် သွေးပါ,5
+prominent_veins_on_calf,သလုံးမြှောင် သွေးကြောများ ဖောင်းကြွ,6
+palpitations,ရင်တုန်,4
+painful_walking,လမ်းလျှောက်လျှင် နာကျင်,2
+pus_filled_pimples,ပြည်ပါဝက်ခြံထ,2
+blackheads,ဝက်ခြံခေါင်းမည်းထ,2
+scurring,အမာရွတ်ကျန်,2
+skin_peeling,အရေပြား ကွာ,3
+silver_like_dusting,ငွေရောင်အကြေးခွံများ ထွက်,2
+small_dents_in_nails,လက်သည်းများ ချိုင့်ဝင်,2
+inflammatory_nails,လက်သည်း ရောင်ရမ်း,2
+blister,အရည်ကြည်ဖုထ,4
+red_sore_around_nose,နှာခေါင်းဘေး အနီကွက်/အနာဖြစ်,2
+yellow_crust_ooze,အဝါရောင် ရည်ကြည့်စိမ့်နာ ဖြစ်,3
+prognosis,ရောဂါကြိုတင်ခန့်မှန်းချက် / အခြေအနေ,5
