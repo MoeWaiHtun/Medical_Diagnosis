@@ -1,1 +1,2 @@
 ffmpeg
+debian-archive-keyring
